@@ -1,4 +1,6 @@
 import sys
+
+from List1.common import run_safely
 from common import setupStreams
 
 def countParagraphs():
@@ -30,5 +32,5 @@ def countParagraphs():
 
 
 if __name__ == "__main__":
-    countParagraphs()
+    run_safely(countParagraphs())
 

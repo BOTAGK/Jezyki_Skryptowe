@@ -1,5 +1,7 @@
 import sys
-from common import setupStreams
+
+from List1.common import is_sentence, run_safely
+from common import set_up_Streams
 
 
 def echo(sentence):
@@ -7,7 +9,10 @@ def echo(sentence):
 
 
 def main(process_sentence):
-    setupStreams()
+    set_up_Streams()
+
+    if sys.stdin.isatty():
+        print("---Oczekiwanie na wejście standardowe (ctrl + d aby zakonczyc)", file=sys.stderr)
     preamble_buffer = formatPremble()
 
     sentence = ""
@@ -47,7 +52,7 @@ def main(process_sentence):
 
             sentence += c
 
-            if c in ".?!":
+            if is_sentence(c):
                 print(process_sentence(sentence.strip()))
                 sentence = ""
                 needs_space = False
@@ -61,6 +66,9 @@ def main(process_sentence):
     while c := sys.stdin.read(1):
         if not handleCharacters(c):
             break
+
+    if sentence:
+        process_sentence(sentence.strip())
 
 
 def formatPremble():
@@ -101,13 +109,7 @@ def formatPremble():
     return buffor
 
 if __name__ == "__main__":
-    try:
-        main(echo)
+    run_safely(main(echo))
 
-    except BrokenPipeError:
-        sys.stdout.close()
-        sys.stderr.close()
-    except KeyboardInterrupt:
-        pass
 
 
