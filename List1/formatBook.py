@@ -1,4 +1,6 @@
 import sys
+from common import setupStreams
+
 
 def echo(sentence):
     return "("+sentence+")"
@@ -56,17 +58,10 @@ def main(process_sentence):
         if not handleCharacters(char):
             return
 
-    while True:
-        c = sys.stdin.read(1)
-        if not c: break
+    while c := sys.stdin.read(1):
         if not handleCharacters(c):
             break
 
-
-
-def setupStreams():
-    sys.stdin.reconfigure(encoding='utf-8')
-    sys.stdout.reconfigure(encoding='utf-8')
 
 def formatPremble():
     preambleLength = 10
@@ -106,6 +101,13 @@ def formatPremble():
     return buffor
 
 if __name__ == "__main__":
-    main(echo)
+    try:
+        main(echo)
+
+    except BrokenPipeError:
+        sys.stdout.close()
+        sys.stderr.close()
+    except KeyboardInterrupt:
+        pass
 
 
