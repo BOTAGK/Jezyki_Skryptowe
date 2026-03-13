@@ -1,8 +1,5 @@
 import sys
-
-from List1.common import is_sentence, run_safely
-from common import set_up_Streams
-
+from common import is_sentence, run_safely, set_up_Streams
 
 def echo(sentence):
     return "("+sentence+")"

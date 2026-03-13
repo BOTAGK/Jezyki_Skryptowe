@@ -1,10 +1,9 @@
 import sys
 
-from List1.common import run_safely
-from common import setupStreams
+from common import run_safely, set_up_Streams
 
 def countParagraphs():
-    setupStreams()
+    set_up_Streams()
 
     paragraphCount = 0
     consecutiveBlankLines = 0
@@ -32,5 +31,5 @@ def countParagraphs():
 
 
 if __name__ == "__main__":
-    run_safely(countParagraphs())
+    run_safely(countParagraphs)
 
