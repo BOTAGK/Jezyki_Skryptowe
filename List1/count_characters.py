@@ -1,7 +1,7 @@
 import sys
 from common import set_up_Streams, run_safely
 
-#mozna dodac rzucanie wyjaktu jesli nie ma wejscia 
+#mozna dodac rzucanie wyjaktu jesli nie ma wejscia
 def countCharacters():
     set_up_Streams()
 

@@ -1,11 +1,14 @@
 import sys
 
 
+def echo(sentence):
+    return sentence
+
 def set_up_Streams():
     sys.stdin.reconfigure(encoding='utf-8')
     sys.stdout.reconfigure(encoding='utf-8')
 
-def is_sentence(c):
+def is_end_of_sentence(c):
     return c in ".?!"
 
 def run_safely(main_func):

@@ -1,11 +1,7 @@
 import sys
-from common import is_sentence, run_safely, set_up_Streams
+from common import is_end_of_sentence, run_safely, set_up_Streams, echo
 
-def echo(sentence):
-    return "("+sentence+")"
-
-
-def main(process_sentence):
+def main_format_book(process_sentence):
     set_up_Streams()
 
     if sys.stdin.isatty():
@@ -35,11 +31,14 @@ def main(process_sentence):
                 if sentence:
                     print(process_sentence(sentence.strip()))
                     sentence = ""
+
                 print()
                 needs_space = False
+
         elif c.isspace():
             needs_space = True
             consecutive_newlines = 0
+
         else:
             consecutive_newlines = 0
 
@@ -49,7 +48,7 @@ def main(process_sentence):
 
             sentence += c
 
-            if is_sentence(c):
+            if is_end_of_sentence(c):
                 print(process_sentence(sentence.strip()))
                 sentence = ""
                 needs_space = False
@@ -65,7 +64,7 @@ def main(process_sentence):
             break
 
     if sentence:
-        process_sentence(sentence.strip())
+        print(process_sentence(sentence.strip()))
 
 
 def formatPremble():
@@ -106,7 +105,7 @@ def formatPremble():
     return buffor
 
 if __name__ == "__main__":
-    run_safely(main(echo))
+    run_safely(lambda: main(echo))
 
 
 
