@@ -1,4 +1,6 @@
 import sys
+
+from List1.common import get_safe_char_stream
 from common import set_up_Streams, run_safely
 
 #mozna dodac rzucanie wyjaktu jesli nie ma wejscia
@@ -7,7 +9,7 @@ def countCharacters():
 
     characterCounter = 0
 
-    while c := sys.stdin.read(1):
+    for c in get_safe_char_stream():
         if not c.isspace():
             characterCounter += 1
 

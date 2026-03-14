@@ -1,5 +1,6 @@
 import sys
 
+from List1.common import get_safe_char_stream
 from common import run_safely, set_up_Streams
 
 def countParagraphs():
@@ -9,7 +10,7 @@ def countParagraphs():
     consecutiveBlankLines = 0
     hasText = False
 
-    while c := sys.stdin.read(1):
+    for c in get_safe_char_stream():
         if c == '\n':
             consecutiveBlankLines += 1
 

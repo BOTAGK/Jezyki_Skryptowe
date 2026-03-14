@@ -1,12 +1,30 @@
 import sys
-from common import is_end_of_sentence, run_safely, set_up_Streams, echo
+
+
+from common import is_end_of_sentence, run_safely, set_up_Streams, echo, get_safe_char_stream
 
 def main_format_book(process_sentence):
     set_up_Streams()
 
     if sys.stdin.isatty():
         print("---Oczekiwanie na wejście standardowe (ctrl + d aby zakonczyc)", file=sys.stderr)
-    preamble_buffer = formatPremble()
+
+
+    def print_formatted_sentence(sentence_text):
+        print(process_sentence(sentence_text))
+
+
+    def print_paragraph_break():
+        print()
+
+
+    process_book_stream(
+        on_sentence_found=print_formatted_sentence,
+        on_paragraph_break=print_paragraph_break
+    )
+
+def process_book_stream(on_sentence_found, on_paragraph_break):
+    preamble_buffer = formatPreamble()
 
     sentence = ""
     consecutive_newlines = 0
@@ -29,10 +47,10 @@ def main_format_book(process_sentence):
 
             if consecutive_newlines >= 2:
                 if sentence:
-                    print(process_sentence(sentence.strip()))
+                    on_sentence_found(sentence.strip())
                     sentence = ""
 
-                print()
+                on_paragraph_break()
                 needs_space = False
 
         elif c.isspace():
@@ -49,7 +67,7 @@ def main_format_book(process_sentence):
             sentence += c
 
             if is_end_of_sentence(c):
-                print(process_sentence(sentence.strip()))
+                on_sentence_found(sentence.strip())
                 sentence = ""
                 needs_space = False
 
@@ -59,15 +77,17 @@ def main_format_book(process_sentence):
         if not handleCharacters(char):
             return
 
-    while c := sys.stdin.read(1):
+    for c in get_safe_char_stream():
         if not handleCharacters(c):
             break
 
     if sentence:
-        print(process_sentence(sentence.strip()))
+        on_sentence_found(sentence.strip())
 
 
-def formatPremble():
+
+
+def formatPreamble():
     preambleLength = 10
     lineCounter = 0
     blankLinesInARow = 0
@@ -104,8 +124,6 @@ def formatPremble():
 
     return buffor
 
+
 if __name__ == "__main__":
-    run_safely(lambda: main(echo))
-
-
-
+    run_safely(lambda: main_format_book(echo))

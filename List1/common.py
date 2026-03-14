@@ -4,6 +4,16 @@ import sys
 def echo(sentence):
     return sentence
 
+def get_safe_char_stream():
+    has_data = False
+
+    while c := sys.stdin.read(1):
+        has_data = True
+        yield c
+
+    if not has_data:
+        raise EOFError("Błąd: Strumień wejściowy jest pusty.")
+
 def set_up_Streams():
     sys.stdin.reconfigure(encoding='utf-8')
     sys.stdout.reconfigure(encoding='utf-8')

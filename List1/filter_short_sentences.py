@@ -1,6 +1,6 @@
 import sys
 
-from List1.common import run_safely, is_end_of_sentence, echo, set_up_Streams
+from common import run_safely, is_end_of_sentence, echo, set_up_Streams, get_safe_char_stream
 
 def filterShortSentences4():
     filterShortSentences(4, True)
@@ -25,10 +25,8 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
     wordCount = 0
     inWord = False
     consecutiveNewLine = 0
-    hasData = False
 
-    while c := sys.stdin.read(1):
-        hasData = True
+    for c in get_safe_char_stream():
 
         #oblsuga akapitow
         if c == '\n':
@@ -58,8 +56,5 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
             currentSentence = ""
             wordCount = 0
 
-    if not hasData:
-        raise EOFError("Błąd: Brak danych w strumieniu wejsciowym")
-
 if __name__ == "__main__":
-    run_safely(filterShortSentences)
+    run_safely(filterShortSentences4)
