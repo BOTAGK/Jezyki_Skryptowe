@@ -1,10 +1,10 @@
 import sys
 
 
-from common import run_safely, set_up_Streams, get_safe_char_stream
+from common import run_safely, set_up_streams, get_safe_char_stream
 
 def countParagraphs():
-    set_up_Streams()
+    set_up_streams()
 
     paragraphCount = calculateParagraphsCount()
 

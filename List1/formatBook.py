@@ -1,10 +1,10 @@
 import sys
 
 
-from common import is_end_of_sentence, run_safely, set_up_Streams, echo, get_safe_char_stream
+from common import is_end_of_sentence, run_safely, set_up_streams, echo, get_safe_char_stream
 
 def main_format_book(process_sentence):
-    set_up_Streams()
+    set_up_streams()
 
     if sys.stdin.isatty():
         print("---Oczekiwanie na wejście standardowe (ctrl + d aby zakonczyc)", file=sys.stderr)

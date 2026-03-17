@@ -14,7 +14,7 @@ def get_safe_char_stream():
     if not has_data:
         raise EOFError("Błąd: Strumień wejściowy jest pusty.")
 
-def set_up_Streams():
+def set_up_streams():
     sys.stdin.reconfigure(encoding='utf-8')
     sys.stdout.reconfigure(encoding='utf-8')
 

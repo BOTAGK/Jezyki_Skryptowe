@@ -1,9 +1,9 @@
 import sys
 
-from common import run_safely, is_end_of_sentence, echo, set_up_Streams, get_safe_char_stream
+from common import run_safely, is_end_of_sentence, echo, set_up_streams, get_safe_char_stream
 
 def filterShortSentences4():
-    filterShortSentences(4, True)
+    filterShortSentences(4, False)
 
 def filterShortSentences(maxWordCount, countParagraphs=False):
     def check_and_print_sentence(sentence_text, wordCount):
@@ -19,7 +19,7 @@ def filterShortSentences(maxWordCount, countParagraphs=False):
         process_text_stream(check_and_print_sentence)
 
 def process_text_stream(on_sentence_found, on_paragraph_break=None):
-    set_up_Streams()
+    set_up_streams()
 
     currentSentence = ""
     wordCount = 0
