@@ -4,6 +4,38 @@ import sys
 def echo(sentence):
     return sentence
 
+
+
+def get_stream_with_paragraphs_preserved():
+    pending_newlines = 0
+    last_real_char = ''
+
+    #wstawiamy kropke przy akapitach aby
+    for c in get_safe_char_stream():
+        if c == '\n':
+            pending_newlines += 1
+            if pending_newlines == 2:
+                #jesli mielismy kropke to jej nie wstawiamy
+                if last_real_char != '' and not is_end_of_sentence(last_real_char):
+                    yield '.'
+                yield '\n'
+                yield '\n'
+            elif pending_newlines > 2:
+                yield '\n'
+        else:
+            if pending_newlines == 1:
+                yield '\n'
+
+            pending_newlines = 0
+
+            if not c.isspace():
+                last_real_char = c
+
+            yield c
+    #jakby caly plik zakonczyl sie jednym enterem
+    if pending_newlines == 1:
+        yield '\n'
+
 def get_safe_char_stream():
     has_data = False
 
