@@ -1,49 +1,15 @@
-from common import set_up_streams, get_stream_with_paragraphs_preserved, is_end_of_sentence, run_safely, echo
+from common import echo, run_safely
+from longestSentenceLogic import find_longest_sentence
 
 
 def print_longest_sentence(process_sentence):
-    def print_sentence(sentence):
-        print(process_sentence(sentence))
+    # bez dodatkowych wymagan
+    def always_valid(sentence, wordCount):
+        return True
 
-    process_text_stream(print_sentence)
-
-def process_text_stream(on_sentence_found):
-    set_up_streams()
-
-    currentSentence = ""
-    wordCount = 0
-    inWord = False
-
-    maxLength = 0
-    maxSentence = ""
-
-    for c in get_stream_with_paragraphs_preserved():
-        currentSentence += c
-
-        if c.isalpha():
-            if not inWord:
-                inWord = True
-                wordCount += 1
-        elif c.isspace() or is_end_of_sentence(c):
-            inWord = False
-
-        if is_end_of_sentence(c):
-            # sprawdź czy zdanie nie jest puste
-            if currentSentence.strip():
-                if maxLength < wordCount:
-                    maxLength = wordCount
-                    maxSentence = currentSentence.strip()
-
-            currentSentence = ""
-            wordCount = 0
-            inWord = False
-
-    # sprawdź dla ostatniego zdania w pliku
-    if currentSentence.strip():
-        if maxLength < wordCount:
-            maxSentence = currentSentence.strip()
-
-    on_sentence_found(maxSentence)
+    longestSentence = find_longest_sentence(always_valid)
+    if longestSentence:
+        print(process_sentence(longestSentence))
 
 
 if __name__ == "__main__":
