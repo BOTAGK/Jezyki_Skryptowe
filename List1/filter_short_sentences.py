@@ -30,11 +30,22 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
 
         #oblsuga akapitow
         if c == '\n':
-            if on_paragraph_break is not None:
-                consecutiveNewLine += 1
-                if consecutiveNewLine == 2:
+            #zawsze zliczamy enter
+            consecutiveNewLine += 1
+
+            if consecutiveNewLine == 2:
+                #jesli mamy on_paragraph to wykonujemy
+                if on_paragraph_break is not None:
                     on_paragraph_break()
-                    consecutiveNewLine = 0
+
+                #wymuszamy koniec zdania
+                if currentSentence.strip() != "":
+                    on_sentence_found(currentSentence.strip(), wordCount)
+
+                currentSentence = ""
+                wordCount = 0
+                inWord = False
+                consecutiveNewLine = 0
             #psujemy enter i zmainiamy na spacje
             c = ' '
 

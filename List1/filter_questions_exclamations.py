@@ -1,7 +1,14 @@
-from common import set_up_streams, get_safe_char_stream, is_end_of_sentence, run_safely
+from common import set_up_streams, get_safe_char_stream, is_end_of_sentence, run_safely, echo
 
 
 def filter_questions_and_exclamations():
+    #dodanie oddzielenie odpowiedzialnosci
+    def print_sentence(sentence):
+        print(echo(sentence))
+
+    process_text_stream(print_sentence)
+
+def process_text_stream(on_sentence_found):
     set_up_streams()
 
     current_sentence = ""
@@ -13,7 +20,7 @@ def filter_questions_and_exclamations():
             clean_sentence = current_sentence.strip()
 
             if clean_sentence.endswith(("!", "?")):
-                print(clean_sentence)
+                on_sentence_found(clean_sentence)
 
             current_sentence = ""
 

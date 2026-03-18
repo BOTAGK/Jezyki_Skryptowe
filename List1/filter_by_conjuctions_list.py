@@ -33,15 +33,9 @@ def process_text_stream(on_sentence_found, conjunctionLimit):
 
         # end of sentence
         if is_end_of_sentence(c):
-            # check the last word
-            cleanWord = currentWord.lower().strip()
-            if cleanWord == "i" or cleanWord == "oraz" or cleanWord == "ale" or cleanWord == "że" or cleanWord == "lub":
-                conjunctionCount += 1
-
             # print only if conjunctions count exceeds 2
             if conjunctionCount >= conjunctionLimit:
                 on_sentence_found(currentSentence.strip())
-
 
             currentSentence = ""
             currentWord = ""
