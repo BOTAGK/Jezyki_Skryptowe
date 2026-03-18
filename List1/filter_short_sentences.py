@@ -1,6 +1,5 @@
 import sys
-
-from common import run_safely, is_end_of_sentence, echo, set_up_streams, get_safe_char_stream
+from common import run_safely, is_end_of_sentence, echo, set_up_streams, get_stream_with_paragraphs_preserved
 
 def filterShortSentences4():
     filterShortSentences(4, False)
@@ -26,29 +25,16 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
     inWord = False
     consecutiveNewLine = 0
 
-    for c in get_safe_char_stream():
+    for c in get_stream_with_paragraphs_preserved():
 
         #oblsuga akapitow
         if c == '\n':
-            #zawsze zliczamy enter
             consecutiveNewLine += 1
+            #jesli mamy on_paragraph to wykonujemy
+            if consecutiveNewLine == 2 and on_paragraph_break is not None:
+                on_paragraph_break()
 
-            if consecutiveNewLine == 2:
-                #jesli mamy on_paragraph to wykonujemy
-                if on_paragraph_break is not None:
-                    on_paragraph_break()
-
-                #wymuszamy koniec zdania
-                if currentSentence.strip() != "":
-                    on_sentence_found(currentSentence.strip(), wordCount)
-
-                currentSentence = ""
-                wordCount = 0
-                inWord = False
-                consecutiveNewLine = 0
-            #psujemy enter i zmainiamy na spacje
             c = ' '
-
         elif not c.isspace():
             consecutiveNewLine = 0
 
@@ -62,10 +48,13 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
             inWord = False
 
         if is_end_of_sentence(c):
-            on_sentence_found(currentSentence.strip(), wordCount)
+            if currentSentence.strip() != "":
+                on_sentence_found(currentSentence.strip(), wordCount)
 
             currentSentence = ""
             wordCount = 0
+            inWord = False
+
 
 if __name__ == "__main__":
     run_safely(filterShortSentences4)

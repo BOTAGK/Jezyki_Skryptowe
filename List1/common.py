@@ -40,6 +40,9 @@ def get_safe_char_stream():
     has_data = False
 
     while c := sys.stdin.read(1):
+        if c == '\r':
+            continue
+
         has_data = True
         yield c
 

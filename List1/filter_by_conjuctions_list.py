@@ -1,4 +1,4 @@
-from common import run_safely, set_up_streams, get_safe_char_stream, is_end_of_sentence, echo
+from common import run_safely, set_up_streams, get_safe_char_stream, is_end_of_sentence, echo, get_stream_with_paragraphs_preserved
 
 def filter_by_two_conjunctions():
     filter_by_conjunctions(2)
@@ -16,7 +16,7 @@ def process_text_stream(on_sentence_found, conjunctionLimit):
     currentWord = ""
     conjunctionCount = 0
     
-    for c in get_safe_char_stream():
+    for c in get_stream_with_paragraphs_preserved():
         currentSentence += c
 
         if c.isspace() or is_end_of_sentence(c):
