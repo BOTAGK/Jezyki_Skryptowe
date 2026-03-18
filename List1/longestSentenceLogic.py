@@ -23,7 +23,7 @@ def find_longest_sentence(is_sentence_valid):
         if is_end_of_sentence(c):
             strippedSentence = currentSentence.strip()
             if strippedSentence:
-                if is_sentence_valid(strippedSentence, wordCount):
+                if is_sentence_valid(strippedSentence):
                     if maxLength < wordCount:
                         maxLength = wordCount
                         maxSentence = strippedSentence
@@ -35,7 +35,7 @@ def find_longest_sentence(is_sentence_valid):
     # sprawdzenie ostatniego zdania w pliku
     strippedSentence = currentSentence.strip()
     if strippedSentence:
-        if is_sentence_valid(strippedSentence, wordCount):
+        if is_sentence_valid(strippedSentence):
             if maxLength < wordCount:
                 maxSentence = strippedSentence
 

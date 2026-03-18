@@ -4,7 +4,7 @@ from longestSentenceLogic import find_longest_sentence
 
 def print_longest_sentence(process_sentence):
     # bez dodatkowych wymagan
-    def always_valid(sentence, wordCount):
+    def always_valid(sentence):
         return True
 
     longestSentence = find_longest_sentence(always_valid)

@@ -3,7 +3,7 @@ from longestSentenceLogic import find_longest_sentence
 
 
 def print_longest_sentence_with_unique_starts(process_sentence):
-    def check_unique_starts(sentence, wordCount):
+    def check_unique_starts(sentence):
         lastStart = None
         inWord = False
 
