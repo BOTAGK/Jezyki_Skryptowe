@@ -1,10 +1,10 @@
 import sys
 
-from common import set_up_Streams, run_safely, get_safe_char_stream
+from common import set_up_streams, run_safely, get_safe_char_stream
 
 #mozna dodac rzucanie wyjaktu jesli nie ma wejscia
 def countCharacters():
-    set_up_Streams()
+    set_up_streams()
 
     totalCharacters = calculateCharactersCount()
 
