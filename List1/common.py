@@ -1,3 +1,4 @@
+import os
 import sys
 
 
@@ -61,8 +62,7 @@ def run_safely(main_func):
         main_func()
 
     except BrokenPipeError:
-        sys.stdout.close()
-        sys.stderr.close()
+        os._exit(0)
     except EOFError as e:
         print(f"Blad wejscia: {e}", file=sys.stderr)
         sys.exit(1)
