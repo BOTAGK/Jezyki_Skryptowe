@@ -3,14 +3,14 @@ import sys
 
 from common import run_safely, set_up_streams, get_safe_char_stream
 
-def countParagraphs():
+def count_paragraphs():
     set_up_streams()
 
-    paragraphCount = calculateParagraphsCount()
+    paragraphCount = calculate_paragraphs_count()
 
     print(paragraphCount)
 
-def calculateParagraphsCount():
+def calculate_paragraphs_count():
     paragraphCount = 0
     consecutiveBlankLines = 0
     hasText = False
@@ -36,5 +36,5 @@ def calculateParagraphsCount():
     return paragraphCount
 
 if __name__ == "__main__":
-    run_safely(countParagraphs)
+    run_safely(count_paragraphs)
 

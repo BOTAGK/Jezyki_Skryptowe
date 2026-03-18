@@ -1,11 +1,11 @@
 from common import run_safely, set_up_streams, get_safe_char_stream, is_end_of_sentence, echo, get_stream_with_paragraphs_preserved
 
-def filter_by_two_conjunctions():
-    filter_by_conjunctions(2)
+def filter_by_two_conjunctions(process_sentence):
+    filter_by_conjunctions(process_sentence,2)
 
-def filter_by_conjunctions(conjunctionLimit):
+def filter_by_conjunctions(process_sentence, conjunctionLimit):
     def print_sentence(sentenceText):
-        print(echo(sentenceText))
+        print(process_sentence(sentenceText))
 
     process_text_stream(print_sentence, conjunctionLimit)
 
@@ -42,6 +42,6 @@ def process_text_stream(on_sentence_found, conjunctionLimit):
             conjunctionCount = 0
 
 if __name__ == "__main__":
-    run_safely(filter_by_two_conjunctions)
+    run_safely(lambda: filter_by_two_conjunctions(echo))
 
 

@@ -1,15 +1,16 @@
 
 from common import get_stream_with_paragraphs_preserved, set_up_streams, is_end_of_sentence, echo, run_safely
-def countProperNamesSentencesPercentage(process_sentence):
+def count_proper_names_sentences_percentage():
     set_up_streams()
-    percentage = calculatePercentageOfSentences()
-    print(process_sentence(percentage))
+    percentage = calculate_percentage_of_proper_sentences()
+    print(percentage)
 
 
-def calculatePercentageOfSentences():
+def calculate_percentage_of_proper_sentences():
     allSentenceCounter = 0
     properNamesSentencesCounter = 0
     isTheFirstWord = True
+    #szukane zdania z proper names
     sentenceCounted = False
 
     for c in get_stream_with_paragraphs_preserved():
@@ -40,4 +41,4 @@ def calculatePercentageOfSentences():
 
 
 if __name__ == "__main__":
-    run_safely(lambda: countProperNamesSentencesPercentage(echo))
+    run_safely(count_proper_names_sentences_percentage())

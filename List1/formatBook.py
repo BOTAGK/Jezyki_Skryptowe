@@ -24,7 +24,7 @@ def main_format_book(process_sentence):
     )
 
 def process_book_stream(on_sentence_found, on_paragraph_break):
-    preamble_buffer = formatPreamble()
+    preamble_buffer = format_preamble()
 
     sentence = ""
     consecutive_newlines = 0
@@ -87,7 +87,7 @@ def process_book_stream(on_sentence_found, on_paragraph_break):
 
 
 
-def formatPreamble():
+def format_preamble():
     preambleLength = 10
     lineCounter = 0
     blankLinesInARow = 0

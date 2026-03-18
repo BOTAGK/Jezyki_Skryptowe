@@ -1,13 +1,13 @@
 import sys
 from common import run_safely, is_end_of_sentence, echo, set_up_streams, get_stream_with_paragraphs_preserved
 
-def filterShortSentences4():
-    filterShortSentences(4, False)
+def filter_short_sentences_4(process_sentence):
+    filter_short_sentences(process_sentence,4, False)
 
-def filterShortSentences(maxWordCount, countParagraphs=False):
+def filter_short_sentences(process_sentence,maxWordCount, countParagraphs=False):
     def check_and_print_sentence(sentence_text, wordCount):
         if 0 < wordCount <= maxWordCount:
-            print(echo(sentence_text))
+            print(process_sentence(sentence_text))
 
     def print_empty_line():
         print()
@@ -57,4 +57,4 @@ def process_text_stream(on_sentence_found, on_paragraph_break=None):
 
 
 if __name__ == "__main__":
-    run_safely(filterShortSentences4)
+    run_safely(lambda: filter_short_sentences_4(echo))
