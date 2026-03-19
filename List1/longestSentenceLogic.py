@@ -4,8 +4,7 @@ def find_longest_sentence(is_sentence_valid):
     set_up_streams()
 
     currentSentence = ""
-    wordCount = 0
-    inWord = False
+    characterCount = 0
 
     maxLength = 0
     maxSentence = ""
@@ -13,30 +12,25 @@ def find_longest_sentence(is_sentence_valid):
     for c in get_stream_with_paragraphs_preserved():
         currentSentence += c
 
-        if c.isalpha():
-            if not inWord:
-                inWord = True
-                wordCount += 1
-        elif c.isspace() or is_end_of_sentence(c):
-            inWord = False
+        if not c.isspace():
+            characterCount += 1
 
         if is_end_of_sentence(c):
             strippedSentence = currentSentence.strip()
             if strippedSentence:
                 if is_sentence_valid(strippedSentence):
-                    if maxLength < wordCount:
-                        maxLength = wordCount
+                    if maxLength < characterCount:
+                        maxLength = characterCount
                         maxSentence = strippedSentence
 
             currentSentence = ""
-            wordCount = 0
-            inWord = False
+            characterCount = 0
 
     # sprawdzenie ostatniego zdania w pliku
     strippedSentence = currentSentence.strip()
     if strippedSentence:
         if is_sentence_valid(strippedSentence):
-            if maxLength < wordCount:
+            if maxLength < characterCount:
                 maxSentence = strippedSentence
 
     return maxSentence
