@@ -6,6 +6,41 @@ def echo(sentence):
     return sentence
 
 
+def get_sentences_stream():
+    current_sentence = ""
+    consecutive_newlines = 0
+
+    for c in get_stream_with_paragraphs_preserved():
+
+        if c == '\n':
+            consecutive_newlines += 1
+            if consecutive_newlines == 2:
+                #wysylamy akapit
+                yield '\n'
+            c = ' '
+        elif not c.isspace():
+            consecutive_newlines = 0
+
+        #problem wielu kropek
+        if is_end_of_sentence(c):
+            current_sentence += c
+            continue
+
+        if current_sentence and is_end_of_sentence(current_sentence[-1]):
+            clean_sentence = current_sentence.strip()
+            if clean_sentence:
+                #wysylane cale zdanie
+                yield clean_sentence
+
+            current_sentence = c
+        else:
+            current_sentence += c
+
+    #ostatnie zdanie
+    if current_sentence and is_end_of_sentence(current_sentence[-1]):
+        clean_sentence = current_sentence.strip()
+        if clean_sentence:
+            yield clean_sentence
 
 def get_stream_with_paragraphs_preserved():
     pending_newlines = 0
