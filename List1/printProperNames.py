@@ -43,8 +43,6 @@ def print_proper_names_from_sentence(process_sentence, sentence_text):
                 in_word = False
                 proper_name = False
 
-
-
 def process_text_stream(process_sentence, on_paragraph_break, count_paragraphs):
 
     for item in get_sentences_stream():
