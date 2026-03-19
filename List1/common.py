@@ -5,6 +5,19 @@ import sys
 def echo(sentence):
     return sentence
 
+def count_words_in_sentence(sentence_text):
+    word_count = 0
+    in_word = False
+
+    for c in sentence_text:
+        if c.isalpha():
+            if not in_word:
+                in_word = True
+                word_count += 1
+        else:
+            in_word = False
+
+    return word_count
 
 def get_sentences_stream():
     current_sentence = ""

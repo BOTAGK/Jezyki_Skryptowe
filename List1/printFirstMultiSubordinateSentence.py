@@ -1,42 +1,38 @@
-from common import set_up_streams, get_stream_with_paragraphs_preserved, is_end_of_sentence, run_safely, echo
+from common import get_sentences_stream
+from common import set_up_streams, run_safely, echo
 
 def print_first_multi_subordinate_sentence(process_sentence):
     print_first_n_subordinate_sentence(process_sentence, 2)
 
-def print_first_n_subordinate_sentence(process_sentence, subordinatesNum):
+def print_first_n_subordinate_sentence(process_sentence, subordinates_num):
     def print_sentence(sentence_text):
         print(process_sentence(sentence_text))
 
-    process_text_stream(print_sentence, subordinatesNum)
+    process_text_stream(print_sentence, subordinates_num)
 
-def process_text_stream(on_sentence_found, subordinatesNum):
+def count_commas_in_sentence(sentence_text):
+    comma_count = 0
+
+    for c in sentence_text:
+        if c == ',':
+            comma_count += 1
+
+    return comma_count
+
+def process_text_stream(on_sentence_found, subordinates_num):
     set_up_streams()
 
-    currentSentence = ""
-    commaCount = 0
+    for item in get_sentences_stream():
 
-    for c in get_stream_with_paragraphs_preserved():
-        currentSentence += c
+        if item == '\n':
+            continue
 
-        if c == ',':
-            commaCount += 1
 
-        if is_end_of_sentence(c):
-            # sprawdz czy znaleziono wystarczajaco zdan podrzednych
-            if commaCount >= subordinatesNum:
-                cleanSentence = currentSentence.strip()
-                if cleanSentence:
-                    on_sentence_found(cleanSentence)
-                    return
+        comma_count = count_commas_in_sentence(item)
 
-            currentSentence = ""
-            commaCount = 0
-
-    # sprawdz dla ostatniego zdania
-    if commaCount >= subordinatesNum:
-        cleanSentence = currentSentence.strip()
-        if cleanSentence:
-            on_sentence_found(cleanSentence)
+        if comma_count > subordinates_num:
+            on_sentence_found(item)
+            return
 
 if __name__ == "__main__":
     run_safely(lambda: print_first_multi_subordinate_sentence(echo))

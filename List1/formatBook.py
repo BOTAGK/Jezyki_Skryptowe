@@ -29,10 +29,10 @@ def process_book_stream(on_sentence_found, on_paragraph_break):
     sentence = ""
     consecutive_newlines = 0
     dashes_count = 0
-    needs_space = False
 
+    #tylko bóg wie co tutaj sie dzieje
     def handleCharacters(c):
-        nonlocal sentence, consecutive_newlines, dashes_count, needs_space
+        nonlocal sentence, consecutive_newlines, dashes_count
 
         if c == '-':
             dashes_count += 1
@@ -41,35 +41,52 @@ def process_book_stream(on_sentence_found, on_paragraph_break):
         else:
             dashes_count = 0
 
+        # Obsługa enterów i akapitów
         if c == '\n':
             consecutive_newlines += 1
-            needs_space = True
 
-            if consecutive_newlines >= 2:
+            if consecutive_newlines == 2:
                 if sentence:
-                    on_sentence_found(sentence.strip())
+                    clean_sentence = sentence.strip()
+                    if clean_sentence:
+                        # Wymuszamy kropkę na końcu akapitu
+                        if not is_end_of_sentence(clean_sentence[-1]):
+                            clean_sentence += "."
+                        # 1. POPRAWKA: Wysyłamy clean_sentence, a nie sentence.strip()
+                        on_sentence_found(clean_sentence)
                     sentence = ""
 
                 on_paragraph_break()
-                needs_space = False
-
-        elif c.isspace():
-            needs_space = True
+            # Zamieniamy enter na spację
+            c = ' '
+        # 2. POPRAWKA: Zerujemy licznik, gdy trafimy na literę (nie-spację)
+        elif not c.isspace():
             consecutive_newlines = 0
 
-        else:
-            consecutive_newlines = 0
-
-            if needs_space and sentence:
-                sentence += " "
-            needs_space = False
-
+        # Budowanie zdań
+        if is_end_of_sentence(c):
             sentence += c
+        else:
+            # Jeśli próbujemy dodać literę po znaku interpunkcyjnym
+            if sentence and is_end_of_sentence(sentence[-1]):
+                clean_sentence = sentence.strip()
+                if clean_sentence:
+                    on_sentence_found(clean_sentence)
 
-            if is_end_of_sentence(c):
-                on_sentence_found(sentence.strip())
-                sentence = ""
-                needs_space = False
+                # Zaczynamy nowe zdanie ignorując spację po kropce
+                if c.isspace():
+                    sentence = ""
+                else:
+                    sentence = c
+            else:
+                # Redukcja spacji
+                if c.isspace():
+                    # 3. POPRAWKA: Dodajemy spację tylko, jeśli zdanie nie jest puste
+                    # i nie kończy się już spacją. Inaczej po prostu ją ignorujemy (brak else).
+                    if sentence and not sentence[-1].isspace():
+                        sentence += c
+                else:
+                    sentence += c
 
         return True
 
@@ -81,8 +98,13 @@ def process_book_stream(on_sentence_found, on_paragraph_break):
         if not handleCharacters(c):
             break
 
+    # Sprawdzenie ostatniego zdania
     if sentence:
-        on_sentence_found(sentence.strip())
+        clean_sentence = sentence.strip()
+        if clean_sentence:
+            if not is_end_of_sentence(clean_sentence[-1]):
+                clean_sentence += "."
+            on_sentence_found(clean_sentence)
 
 
 

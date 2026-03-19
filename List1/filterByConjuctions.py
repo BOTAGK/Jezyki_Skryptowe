@@ -1,16 +1,16 @@
-from common import run_safely, set_up_streams, get_safe_char_stream, is_end_of_sentence, echo, get_stream_with_paragraphs_preserved, get_sentences_stream
+from common import run_safely, set_up_streams,  echo, get_sentences_stream
 
 def filter_by_two_conjunctions(process_sentence, count_paragraphs):
     filter_by_conjunctions(process_sentence,2, count_paragraphs)
 
-def filter_by_conjunctions(process_sentence, conjunctionLimit, count_paragraphs):
-    def print_sentence(sentenceText):
-        print(process_sentence(sentenceText))
+def filter_by_conjunctions(process_sentence, conjunction_limit, count_paragraphs):
+    def print_sentence(sentence_text):
+        print(process_sentence(sentence_text))
 
     def print_empty_line():
         print()
 
-    process_text_stream(print_sentence,print_empty_line, conjunctionLimit, count_paragraphs)
+    process_text_stream(print_sentence,print_empty_line, conjunction_limit, count_paragraphs)
 
 def count_conjunctions_in_sentence(sentence_text):
     conjunction_count = 0
@@ -35,7 +35,7 @@ def count_conjunctions_in_sentence(sentence_text):
 
     return conjunction_count
 
-def process_text_stream(on_sentence_found,on_paragraph_break, conjunctionLimit, count_paragraphs):
+def process_text_stream(on_sentence_found,on_paragraph_break, conjunction_limit, count_paragraphs):
     set_up_streams()
 
     for item in get_sentences_stream():
@@ -44,7 +44,7 @@ def process_text_stream(on_sentence_found,on_paragraph_break, conjunctionLimit, 
             on_paragraph_break()
             continue
 
-        if count_conjunctions_in_sentence(item) >= conjunctionLimit:
+        if count_conjunctions_in_sentence(item) >= conjunction_limit:
             on_sentence_found(item)
 
 if __name__ == "__main__":

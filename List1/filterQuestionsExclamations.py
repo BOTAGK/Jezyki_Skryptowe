@@ -1,4 +1,4 @@
-from common import set_up_streams, get_safe_char_stream, is_end_of_sentence, run_safely, echo, get_sentences_stream
+from common import set_up_streams, run_safely, echo, get_sentences_stream
 
 
 def filter_questions_and_exclamations(process_sentence, count_paragraphs):

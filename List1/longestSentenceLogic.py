@@ -1,43 +1,23 @@
+from common import get_sentences_stream
 from common import get_stream_with_paragraphs_preserved, is_end_of_sentence, set_up_streams
 
 def find_longest_sentence(is_sentence_valid):
-    set_up_streams()
+   set_up_streams()
 
-    currentSentence = ""
-    wordCount = 0
-    inWord = False
+   max_length = 0
+   max_sentence = ""
 
-    maxLength = 0
-    maxSentence = ""
+   for item in get_sentences_stream():
 
-    for c in get_stream_with_paragraphs_preserved():
-        currentSentence += c
+       if item == "\n":
+           continue
 
-        if c.isalpha():
-            if not inWord:
-                inWord = True
-                wordCount += 1
-        elif c.isspace() or is_end_of_sentence(c):
-            inWord = False
+       char_count = len(item)
 
-        if is_end_of_sentence(c):
-            strippedSentence = currentSentence.strip()
-            if strippedSentence:
-                if is_sentence_valid(strippedSentence):
-                    if maxLength < wordCount:
-                        maxLength = wordCount
-                        maxSentence = strippedSentence
+       if is_sentence_valid(item):
 
-            currentSentence = ""
-            wordCount = 0
-            inWord = False
+           if char_count > max_length:
+               max_length = char_count
+               max_sentence = item
 
-    # sprawdzenie ostatniego zdania w pliku
-    strippedSentence = currentSentence.strip()
-    if strippedSentence:
-        if is_sentence_valid(strippedSentence):
-            if maxLength < wordCount:
-                maxSentence = strippedSentence
-
-    return maxSentence
-
+   return max_sentence

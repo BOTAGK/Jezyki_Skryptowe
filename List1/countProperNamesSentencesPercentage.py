@@ -1,44 +1,50 @@
 
-from common import get_stream_with_paragraphs_preserved, set_up_streams, is_end_of_sentence, echo, run_safely
+from common import  set_up_streams, run_safely, get_sentences_stream
 def count_proper_names_sentences_percentage():
     set_up_streams()
     percentage = calculate_percentage_of_proper_sentences()
     print(percentage)
 
+def has_proper_name(sentence_text):
+    in_word = False
+    is_first_word = True
+
+    for c in sentence_text:
+        if c.isalpha():
+            # Jeśli właśnie zaczynamy nowe słowo
+            if not in_word:
+                in_word = True
+                # Sprawdzamy czy zaczyna się wielką literą i nie pierwsze slowo
+                if c.isupper() and not is_first_word:
+                    return True
+        else:
+            #konczymy slowo jesli znak interpunkcyjny,
+            if in_word:
+                is_first_word = False
+                in_word = False
+
+    return False
+
 
 def calculate_percentage_of_proper_sentences():
-    allSentenceCounter = 0
-    properNamesSentencesCounter = 0
-    isTheFirstWord = True
-    #szukane zdania z proper names
-    sentenceCounted = False
+    all_sentence_counter = 0
+    proper_names_sentences_counter = 0
 
-    for c in get_stream_with_paragraphs_preserved():
-        if c == "-":
+    for item in get_sentences_stream():
+
+        if item == '\n':
             continue
 
-        #jesli to koniec zdania
-        if is_end_of_sentence(c):
-            allSentenceCounter += 1
-            isTheFirstWord = True
-            sentenceCounted = False
-        #jesli to wielka litera
-        elif c.isupper():
-            if isTheFirstWord:
-                #ignorujemy pierwsze slowo
-                isTheFirstWord = False
-            elif not sentenceCounted:
-                properNamesSentencesCounter += 1
-                sentenceCounted = True
-        #jesli mala
-        elif c.islower():
-            isTheFirstWord = False
+        all_sentence_counter += 1
 
-    if allSentenceCounter == 0:
+        if has_proper_name(item):
+            proper_names_sentences_counter += 1
+
+    if all_sentence_counter == 0:
         return 0.0
 
-    return (properNamesSentencesCounter / allSentenceCounter) * 100
+    return (proper_names_sentences_counter / all_sentence_counter) * 100
 
 
 if __name__ == "__main__":
-    run_safely(count_proper_names_sentences_percentage())
+    run_safely(count_proper_names_sentences_percentage)

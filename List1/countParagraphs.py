@@ -1,7 +1,6 @@
-import sys
 
-
-from common import run_safely, set_up_streams, get_safe_char_stream
+from common import get_sentences_stream
+from common import run_safely, set_up_streams
 
 def count_paragraphs():
     set_up_streams()
@@ -11,29 +10,24 @@ def count_paragraphs():
     print(paragraphCount)
 
 def calculate_paragraphs_count():
-    paragraphCount = 0
-    consecutiveBlankLines = 0
-    hasText = False
+    paragraph_count = 0
+    has_text = False
 
-    for c in get_safe_char_stream():
-        if c == '\n':
-            consecutiveBlankLines += 1
+    for item in get_sentences_stream():
 
-            if consecutiveBlankLines >= 2 and hasText:
-                paragraphCount += 1
-                hasText = False
+        if item == '\n':
 
-        elif c.isspace():
-            consecutiveBlankLines = 0
+            if has_text:
+                paragraph_count += 1
+                has_text = False
 
         else:
-            consecutiveBlankLines = 0
-            hasText = True
+            has_text = True
 
-    if hasText:
-        paragraphCount += 1
+    if has_text:
+        paragraph_count += 1
 
-    return paragraphCount
+    return paragraph_count
 
 if __name__ == "__main__":
     run_safely(count_paragraphs)

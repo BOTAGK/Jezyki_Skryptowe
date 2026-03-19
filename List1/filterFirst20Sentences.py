@@ -1,5 +1,5 @@
 from common import get_sentences_stream
-from common import get_stream_with_paragraphs_preserved, is_end_of_sentence, set_up_streams, echo, run_safely
+from common import set_up_streams, echo, run_safely
 
 def filter_first_20_sentences(process_sentence):
     filter_first_x_sentences(process_sentence, 20, False)
