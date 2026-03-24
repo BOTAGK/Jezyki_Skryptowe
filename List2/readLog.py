@@ -2,7 +2,6 @@ import sys
 import logging
 from datetime import datetime, timezone
 from typing import NamedTuple, Optional
-from common import run_safely
 
 
 class LogEntry(NamedTuple):
