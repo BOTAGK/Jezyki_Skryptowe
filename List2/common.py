@@ -6,8 +6,7 @@ def echo(s):
 
 def run_safely(main_func):
     try:
-        main_func()
-
+        return main_func()
     except BrokenPipeError:
         os._exit(0)
     except EOFError as e:
