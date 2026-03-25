@@ -1,7 +1,5 @@
 from List2.utils.validateLog import validate_log
 
-URI_INDEX = 8
-URI_FIELD = "uri"
 
 def get_top_uris(log, n=10):
     validate_log(log)
@@ -12,7 +10,7 @@ def get_top_uris(log, n=10):
     counts = {}
 
     for entry in log:
-        uri = entry[URI_INDEX]
+        uri = entry.uri
         counts[uri] = counts.get(uri, 0) + 1
 
     # porownywanie po licznosci
