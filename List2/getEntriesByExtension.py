@@ -1,0 +1,15 @@
+from List2.readLog import LogEntry
+from utils.validateLog import validate_log
+
+
+def get_entries_by_extension(log, ext) -> list[LogEntry]:
+    validate_log(log)
+
+    if not log:
+        return []
+
+    #upewniamy sie ze ext ma kropke
+    ext_with_dot = ext if ext.startwith('.') else f".{ext}"
+
+    #bierzemy tylko pierwsza czesc bez znaku zapytania
+    return [ entry for entry in log if entry.uri.split('?')[0].endswith(ext_with_dot) ]

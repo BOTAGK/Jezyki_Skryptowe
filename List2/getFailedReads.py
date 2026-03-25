@@ -1,7 +1,12 @@
+from List2.readLog import LogEntry
 from utils.validateLog import validate_log
 
-def get_failed_reads(log, merge=False):
+def get_failed_reads(log, merge=False) -> list[LogEntry] | tuple[list[LogEntry], list[LogEntry]]:
     validate_log(log)
+
+    lower_bound_4xx = 400
+    upper_bound_4xx = 500
+    upper_bound_5xx = 600
 
     logs_4xx = []
     logs_5xx = []
@@ -13,9 +18,9 @@ def get_failed_reads(log, merge=False):
         if code is None:
             continue
 
-        if 400 <= code < 500:
+        if lower_bound_4xx <= code < upper_bound_4xx:
             logs_4xx.append(entry)
-        elif 500 <= code < 600:
+        elif upper_bound_4xx <= code < upper_bound_5xx:
             logs_5xx.append(entry)
 
     if merge:
