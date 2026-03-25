@@ -1,4 +1,5 @@
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
+
 
 def count_status_classes(log):
     validate_log(log)
