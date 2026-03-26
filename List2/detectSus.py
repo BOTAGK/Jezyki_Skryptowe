@@ -34,7 +34,7 @@ def _collect_ip_stats(log):
     return ip_stats
 
 def _is_suspicious(stats, rq_threshold, error_percentage=0.33, intervals_percentage=0.5):
-    is_heavy_traffic = stats["request"] >= rq_threshold
+    is_heavy_traffic = stats["requests"] >= rq_threshold
     has_many_errors = stats["errors_404"] >= max(1, error_percentage * rq_threshold)
     has_many_short_intervals = stats["short_intervals"] >= max(1, intervals_percentage * rq_threshold)
 

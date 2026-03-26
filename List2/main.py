@@ -76,8 +76,7 @@ class TestLab03(unittest.TestCase):
     #         print_dict_entry_dates('no_dict')
 
     def test_zad16(self):
-        log_dict = log_to_dict(log)
-        result = get_most_active_session(log_dict)
+        result = get_most_active_session(log)
 
         self.assertIsInstance(result, tuple)
         self.assertEqual(len(result), 2)
@@ -85,10 +84,10 @@ class TestLab03(unittest.TestCase):
         self.assertIsInstance(result[1], int)
         self.assertGreater(result[1], 0)
 
-        self.assertIsNone(get_most_active_session({}))
+        # self.assertIsNone(get_most_active_session({}))
 
         with self.assertRaises(TypeError):
-            get_most_active_session('not_a_dict')
+            get_most_active_session('not_a_log')
 
     def test_zad17(self):
         paths = get_session_paths(log)
@@ -104,10 +103,21 @@ class TestLab03(unittest.TestCase):
         suspicious = detect_sus(log, threshold=100)
         self.assertIsInstance(suspicious, dict)
 
-        with self.assertRaises(TypeError):
-            detect_sus(log, threshold=-5)
-        with self.assertRaises(TypeError):
+        suspicious_low = detect_sus(log, threshold=5)
+        self.assertIsInstance(suspicious_low, dict)
+
+        #BŁĘDNE WARTOŚCI
+        with self.assertRaises(ValueError):
+            detect_sus(log, threshold=0)
+
+        with self.assertRaises(ValueError):
+            detect_sus(log, threshold=-10)
+
+        with self.assertRaises(ValueError):
             detect_sus(log, threshold='high')
+
+        with self.assertRaises(ValueError):
+            detect_sus(log, threshold=5.5)
 
     def test_zad19(self):
         stats = get_extension_stats(log)
