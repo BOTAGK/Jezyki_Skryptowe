@@ -1,5 +1,5 @@
 from operator import attrgetter
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
 
 def sort_log(log, index, reverse=False):
     validate_log(log)

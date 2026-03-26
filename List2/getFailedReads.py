@@ -1,5 +1,5 @@
 from List2.readLog import LogEntry
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
 
 def get_failed_reads(log, merge=False) -> list[LogEntry] | tuple[list[LogEntry], list[LogEntry]]:
     validate_log(log)

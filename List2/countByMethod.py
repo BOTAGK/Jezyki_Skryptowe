@@ -1,5 +1,5 @@
 from collections import Counter
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
 
 def count_by_method(log) -> dict[str, int]:
     validate_log(log)

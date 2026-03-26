@@ -1,5 +1,5 @@
 from List2.readLog import LogEntry
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
 
 def get_entries_by_extension(log, ext) -> list[LogEntry]:
     validate_log(log)
@@ -9,7 +9,7 @@ def get_entries_by_extension(log, ext) -> list[LogEntry]:
 
     #upewniamy sie ze ext jest z malej  i ma kropke
     clean_ext = ext.lower()
-    ext_with_dot = clean_ext if clean_ext.startwith('.') else f".{clean_ext}"
+    ext_with_dot = clean_ext if clean_ext.startswith('.') else f".{clean_ext}"
 
     #bierzemy tylko pierwsza czesc bez znaku zapytania
     return [ entry for entry in log

@@ -1,4 +1,4 @@
-from utils.validateLog import validate_log
+from List2.utils.validateLog import validate_log
 
 def get_entries_by_code(log, code):
     validate_log(log)
