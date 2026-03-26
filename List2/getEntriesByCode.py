@@ -4,7 +4,7 @@ def get_entries_by_code(log, code):
     validate_log(log)
 
     if not isinstance(code, int):
-        raise TypeError(f"Status code must be int, but is {type(code).__name__}")
+        raise TypeError(f"Status code musi być int, ale jest: {type(code).__name__}")
 
     if not log:
         return []

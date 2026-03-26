@@ -1,20 +1,14 @@
+from List2.utils.validateLog import validate_log
+from collections import Counter
+
 def get_most_active_session(log):
-    if not isinstance(log, dict):
-        raise TypeError("log musi byc slownikiem")
+    validate_log(log)
 
-    most_active_uid = None
-    max_requests = 0
-
-    for uid, entries in log.items():
-        if not isinstance(entries, list):
-            raise TypeError("Sesja musi byc listą")
-
-        num_requests = len(entries)
-        if num_requests > max_requests:
-            max_requests = num_requests
-            most_active_uid = uid
-
-    if most_active_uid is None:
+    if not log:
         return None
 
-    return most_active_uid, max_requests
+    uid_counts = Counter(entry.uid for entry in log)
+
+    most_active_uid, max_request = uid_counts.most_common(1)[0]
+
+    return most_active_uid, max_request

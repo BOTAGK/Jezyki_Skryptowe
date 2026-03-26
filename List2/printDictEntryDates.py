@@ -1,40 +1,49 @@
+from collections import Counter
+
 def print_dict_entry_dates(log_dict):
+
     if not isinstance(log_dict, dict):
         raise TypeError("log_dict musi byc slownikiem")
 
-    for uid in log_dict:
-        entries = log_dict[uid]
-
-        if not isinstance(entries, list):
-            raise TypeError("Sesja musi byc listą")
-
+    for uid, entries in log_dict.items():
         total_requests = len(entries)
+
         if total_requests == 0:
             continue
 
-        session_ips = []
-        session_hosts = []
-        method_counts = {}
+        #set usuwa powtarzajace sie ip i hostname
+        ips = set()
+        hosts = set()
         timestamps = []
-        code_2xx_count = 0
+        methods_counter = Counter()
+        success_codes_count = 0
 
         for entry in entries:
-            session_ips.append(entry['id_orig_h'])
-            session_hosts.append(entry['host'])
-            method_counts[entry['method']] = method_counts.get(entry['method'], 0) + 1
-            timestamps.append(entry['ts'])
+            ips.add(entry["id_orig_h"])
+            hosts.add(entry["host"])
+            timestamps.append(entry["ts"])
+            methods_counter[entry["method"]] += 1
 
-            if entry['status_code'] is not None and entry['status_code'] / 100 == 2:
-                code_2xx_count += 1
+            #bezpieczne sprawdzenie kodu 2xx
+            code = entry.get("status_code")
+            if code is not None and code // 100 == 2:
+                success_codes_count += 1
 
-        print(f"=== Session: {uid} ===")
-        print(f"IP Addresses: {', '.join(session_ips)}")
-        print(f"Hosts: {', '.join(session_hosts)}")
-        print(f"Number of requests: {total_requests}")
-        print(f"First/Last: {min(timestamps)} / {max(timestamps)}")
-        print("HTTP Methods distribution:")
-        for m, count in method_counts.items():
-            print(f"  - {m}: {(count / total_requests) * 100:.2f}%")
-        print(f"Ratio 2xx: {(code_2xx_count / total_requests):.2f}")
-        print("-" * 20)
+        first_request = min(timestamps)
+        last_request = max(timestamps)
+        ratio_2xx = success_codes_count / total_requests
+
+        print(f" Sesja (UID): {uid}")
+        print(f"   ➔ Adresy IP: {', '.join(ips)}")
+        print(f"   ➔ Hosty: {', '.join(hosts)}")
+        print(f"   ➔ Liczba żądań: {total_requests}")
+        print(f"   ➔ Czas trwania: od {first_request} do {last_request}")
+        print(f"   ➔ Stosunek kodów 2xx: {ratio_2xx:.2f} ({success_codes_count}/{total_requests})")
+
+        print("   ➔ Podział metod HTTP:")
+        for method, count in methods_counter.items():
+            percentage = (count / total_requests) * 100
+            print(f"      • {method}: {percentage:.1f}%")
+
+        print("-" * 40)
 

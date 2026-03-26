@@ -1,18 +1,15 @@
 from List2.utils.validateLog import validate_log
-
+from collections import Counter
 
 def get_top_uris(log, n=10):
     validate_log(log)
 
-    if not isinstance(n, int):
+    if not isinstance(n, int) or n < 0:
         raise TypeError("n musi byc dodatnia liczba całkowita")
 
-    counts = {}
+    if not log:
+        return []
 
-    for entry in log:
-        uri = entry.uri
-        counts[uri] = counts.get(uri, 0) + 1
+    counts = Counter(entry.uri for entry in log)
 
-    # porownywanie po licznosci
-    sorted_uris = sorted(counts.items(), key = lambda item: item[1], reverse = True)
-    return sorted_uris[:n]
+    return counts.most_common(n)

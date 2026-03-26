@@ -1,54 +1,64 @@
 from List2.utils.validateLog import validate_log
 
+def _init_ip_stats():
+    return {
+        "requests": 0,
+        "errors_404": 0,
+        "short_intervals": 0,
+        "last_ts": None
+    }
 
-def detect_sus(log, threshold):
-    validate_log(log)
 
-    if not isinstance(threshold, int) or threshold <= 0:
-        raise TypeError("Threshold musi byc dodatnia liczba calkowita")
-
-    if not log:
-        return {}
-
-    by_ip = {}
+def _collect_ip_stats(log):
+    ip_stats = {}
 
     for entry in log:
         ip = entry.id_orig_h
 
-        if ip not in by_ip:
-            by_ip[ip] = {
-                "requests": 0,
-                "errors_404": 0,
-                "short_intervals": 0,
-                "last_ts": None
-            }
+        if ip not in ip_stats:
+            ip_stats[ip] = _init_ip_stats()
 
-        stats = by_ip[ip]
+        stats = ip_stats[ip]
         stats["requests"] += 1
 
         if entry.status_code == 404:
             stats["errors_404"] += 1
 
+        # liczenie krótkich odstępów czasu
         if stats["last_ts"] is not None:
-            delta_seconds = (entry.ts - stats["last_ts"]).total_seconds()
-            # Bardzo krótki odstęp może wskazywać na automatyczne skanowanie.
-            if 0 <= delta_seconds <= 1:
+            time_diff = (entry.ts - stats["last_ts"]).total_seconds()
+            if 0 <= time_diff <= 1:
                 stats["short_intervals"] += 1
 
         stats["last_ts"] = entry.ts
+    return ip_stats
 
-    suspicious = {}
+def _is_suspicious(stats, rq_threshold, error_percentage=0.33, intervals_percentage=0.5):
+    is_heavy_traffic = stats["request"] >= rq_threshold
+    has_many_errors = stats["errors_404"] >= max(1, error_percentage * rq_threshold)
+    has_many_short_intervals = stats["short_intervals"] >= max(1, intervals_percentage * rq_threshold)
 
-    for ip, stats in by_ip.items():
-        is_high_requests = stats["requests"] >= threshold
-        is_high_404 = stats["errors_404"] >= max(1, threshold // 3)
-        is_many_short_gaps = stats["short_intervals"] >= max(1, threshold // 2)
+    return is_heavy_traffic and (has_many_errors or has_many_short_intervals)
 
-        if is_high_requests and (is_high_404 or is_many_short_gaps):
-            suspicious[ip] = {
+def detect_sus(log, threshold):
+    validate_log(log)
+
+    if not isinstance(threshold, int) or threshold <= 0:
+        raise ValueError("Threshold musi być dodatnią liczbą całkowitą")
+
+    if not log:
+        return {}
+
+    all_ip_stats = _collect_ip_stats(log)
+
+    suspicious_ips = {}
+
+    for ip, stats in all_ip_stats.items():
+        if _is_suspicious(stats, threshold):
+            suspicious_ips[ip] = {
                 "requests": stats["requests"],
                 "errors_404": stats["errors_404"],
                 "short_intervals": stats["short_intervals"]
             }
 
-    return suspicious
+    return suspicious_ips

@@ -1,21 +1,18 @@
-from List2.entryToDict import entry_to_dict
+from collections import defaultdict
+
 from List2.utils.validateLog import validate_log
 
 # przyjmuje log jako liste krotek
 def get_session_paths(log):
     validate_log(log)
 
-    session_paths = {}
-
     if not log:
-        return session_paths
+        return {}
+
+    session_paths = defaultdict(list)
 
     for entry in log:
-        entry_uid = entry.uid
+        session_paths[entry.uid].append(entry.uri)
 
-        if entry_uid not in session_paths:
-            session_paths[entry_uid] = []
-
-        session_paths[entry_uid].append(entry.uri)
-
-    return session_paths
+    #zwracamy jako zwykly slownik
+    return dict(session_paths)

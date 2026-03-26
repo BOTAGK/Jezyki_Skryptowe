@@ -7,7 +7,7 @@ def sort_log(log, index, reverse=False):
         return []
 
     if index < 0 or index >= len(log[0]):
-        raise IndexError(f"Invalid index: {index}.")
+        raise IndexError(f"Nieprawidłowy index: {index}.")
 
     return sorted(log, key = lambda x: x[index], reverse=reverse)
 
