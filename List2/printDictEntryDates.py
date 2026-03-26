@@ -1,5 +1,8 @@
 from collections import Counter
 
+from List2.strucutres import EntryDictKey
+
+
 def print_dict_entry_dates(log_dict):
 
     if not isinstance(log_dict, dict):
@@ -19,13 +22,13 @@ def print_dict_entry_dates(log_dict):
         success_codes_count = 0
 
         for entry in entries:
-            ips.add(entry["id_orig_h"])
-            hosts.add(entry["host"])
-            timestamps.append(entry["ts"])
-            methods_counter[entry["method"]] += 1
+            ips.add(entry.get(EntryDictKey.ORIG_H, ""))
+            hosts.add(entry.get(EntryDictKey.HOST, ""))
+            timestamps.append(entry[EntryDictKey.TS])
+            methods_counter[entry[EntryDictKey.METHOD]] += 1
 
             #bezpieczne sprawdzenie kodu 2xx
-            code = entry.get("status_code")
+            code = entry.get(EntryDictKey.STATUS_CODE)
             if code is not None and code // 100 == 2:
                 success_codes_count += 1
 
@@ -46,4 +49,3 @@ def print_dict_entry_dates(log_dict):
             print(f"      • {method}: {percentage:.1f}%")
 
         print("-" * 40)
-

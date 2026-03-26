@@ -5,7 +5,7 @@ def get_top_uris(log, n=10):
     validate_log(log)
 
     if not isinstance(n, int) or n < 0:
-        raise TypeError("n musi byc dodatnia liczba całkowita")
+        raise TypeError("n musi byc dodatnia liczba całkowita dodatnia")
 
     if not log:
         return []

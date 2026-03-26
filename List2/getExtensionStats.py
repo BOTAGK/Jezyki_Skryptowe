@@ -11,7 +11,7 @@ def get_extension_stats(log):
 
     for entry in log:
         # bierzemy tylko dane bez query
-        based_uri = (entry.uri).split('?')[0]
+        based_uri = entry.uri.split('?')[0]
 
         if '.' in based_uri:
             extension = based_uri.split('.')[-1]

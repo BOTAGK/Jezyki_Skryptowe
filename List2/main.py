@@ -5,7 +5,7 @@ from List2.analyzeLog import analyze_log
 from List2.countStatusClasses import count_status_classes
 from List2.detectSus import detect_sus
 from List2.entryToDict import entry_to_dict
-from List2.findMostActiveSession import get_most_active_session
+from List2.getMostActiveSession import get_most_active_session
 from List2.getExtensionStats import get_extension_stats
 from List2.getSessionPaths import get_session_paths
 from List2.getTopURIs import get_top_uris

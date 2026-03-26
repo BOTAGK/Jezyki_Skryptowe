@@ -1,7 +1,9 @@
 import sys
 import logging
 from datetime import datetime, timezone
-from typing import NamedTuple, Optional
+from typing import Optional
+
+from List2.strucutres import LogEntry
 
 IDX_TS = 0
 IDX_UID = 1
@@ -17,18 +19,6 @@ IDX_STATUS_TEXT = 15
 
 MIN_PARTS_LENGTH = 15
 
-class LogEntry(NamedTuple):
-    ts: datetime
-    uid: str
-    id_orig_h: str
-    id_orig_p: int
-    id_resp_h: str
-    id_resp_p: int
-    method: str
-    host: str
-    uri: str
-    status_code: Optional[int]
-    status_text: Optional[str]
 
 def parse_log_line(line: str) -> Optional[LogEntry]:
     #jedna linia logu na obiekt LogEntry

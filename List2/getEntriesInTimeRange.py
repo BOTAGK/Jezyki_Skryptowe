@@ -2,14 +2,11 @@ from datetime import datetime, timezone
 
 from List2.utils.validateLog import validate_log
 
-
 def _ensure_datetime(val):
-
     if isinstance(val, datetime):
         return val
 
     try:
-
         return datetime.fromtimestamp(float(val), tz=timezone.utc)
     except (ValueError, TypeError):
         raise TypeError(
