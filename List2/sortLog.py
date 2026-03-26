@@ -11,6 +11,7 @@ def sort_log(log, index, reverse=False):
 
     return sorted(log, key = lambda x: x[index], reverse=reverse)
 
+
 def sort_log_by_name(log, field_name, reverse=False):
     validate_log(log)
     if not log:

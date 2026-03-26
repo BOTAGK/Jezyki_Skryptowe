@@ -1,7 +1,6 @@
 from List2.readLog import LogEntry
 from utils.validateLog import validate_log
 
-
 def get_entries_by_extension(log, ext) -> list[LogEntry]:
     validate_log(log)
 
