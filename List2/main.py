@@ -33,6 +33,8 @@ except FileNotFoundError:
     raise ValueError('Error: That file does not exist.')
 
 
+
+
 class TestLab03(unittest.TestCase):
     def test_zad1(self):
         self.assertEqual(len(log), 100000)

@@ -10,6 +10,7 @@ class IpStats:
     requests: int = 0
     errors_404: int = 0
     short_intervals: int = 0
+    score: int = 0
     last_ts: Optional[datetime] = None
 
 
@@ -46,7 +47,7 @@ def _is_suspicious(stats, rq_threshold, error_percentage=0.33, intervals_percent
 
     return is_heavy_traffic and (has_many_errors or has_many_short_intervals)
 
-def detect_sus(log, threshold):
+def detect_sus(log, threshold, weights=(1.0, 2.0, 0.5)):
     validate_log(log)
 
     if not isinstance(threshold, int) or threshold <= 0:
@@ -64,7 +65,7 @@ def detect_sus(log, threshold):
             suspicious_ips[ip] = {
                 "requests": stats.requests,
                 "errors_404": stats.errors_404,
-                "short_intervals": stats.short_intervals
+                "score": weights[0] * stats.requests + weights[1] * stats.errors_404 + weights[2] * stats.short_intervals
             }
 
     return suspicious_ips
