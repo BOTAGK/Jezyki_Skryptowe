@@ -25,18 +25,16 @@ def convert_file(input_path: Path, output_dir: Path, target_format: str) -> None
     
     # Budujemy komendę dla subprocessa w zależności od narzędzia
     if tool == "ffmpeg":
-        # -y : automatycznie nadpisuj pliki bez pytania (yes)
         # -loglevel error : wyłącza setki wierszy technicznego "bełkotu" ffmpeg z konsoli
         command = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(input_path), str(out_path)]
     else: 
-        # ImageMagick używa nowej komendy 'magick' (w starych wersjach było to 'convert')
+        # ImageMagick używa nowej komendy 'magick' 
         command = ["magick", str(input_path), str(out_path)]
 
     try:
         # Odpalamy zewnętrzny program
         result = subprocess.run(command, capture_output=True, text=True)
         
-        # Kod 0 w systemach OS oznacza "Wszystko poszło dobrze"
         if result.returncode == 0:
             print(f"  [Sukces] Zapisano jako: {out_filename}")
             
@@ -46,7 +44,7 @@ def convert_file(input_path: Path, output_dir: Path, target_format: str) -> None
         else:
             print(f"  [Błąd] Program {tool} zgłosił problem:\n{result.stderr}", file=sys.stderr)
             
-    # Ten wyjątek pojawi się, gdy system nie znajdzie programu 'ffmpeg' lub 'magick'
+    #  Gdy system nie znajdzie programu 'ffmpeg' lub 'magick'
     except FileNotFoundError:
         print(f"\n[Błąd Krytyczny] Nie znaleziono programu '{tool}' w systemie!", file=sys.stderr)
         print("Upewnij się, że jest zainstalowany i dodany do zmiennej środowiskowej PATH.", file=sys.stderr)
