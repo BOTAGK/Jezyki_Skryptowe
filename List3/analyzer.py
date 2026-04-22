@@ -5,7 +5,7 @@ import sys
 
 
 def analyze_path(file_path: Path) -> dict:
-    
+
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
         content = file.read()
 

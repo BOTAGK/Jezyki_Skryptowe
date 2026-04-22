@@ -7,7 +7,7 @@ import time
 
 def setup_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Własna implementacja programu 'tail'")
-    # Argument pozycyjny (nargs=?) - nie wymaga nazwy flagi
+    # nargs="?" - nie wymaga nazwy flagi
     parser.add_argument(
        "file",
        nargs="?",
@@ -37,9 +37,8 @@ def print_last_lines(iterator, n: int) -> None:
         sys.stdout.write(line)
 
 def follow_file(file_path: Path) -> None:
-    """Śledzenie zmian w pliku i wypisywanie dopisywanych linii na bieżąco"""
-    with open(file_path, 'r') as file:
-        #przewijamy wskaznik na sam koniec pliku
+    with open(file_path, 'r', encoding='utf-8', errors='replace') as file:
+        # przewijamy wskaznik na sam koniec pliku
         file.seek(0, os.SEEK_END)
 
         while True:
@@ -47,17 +46,16 @@ def follow_file(file_path: Path) -> None:
             line = file.readline()
 
             if not line:
-                # Jesli nie ma nowej lini czekamy moment aby nie obciazac CPU
                 time.sleep(0.1)  
-                # Jesli plik zostal skasowany lub przeniesiony, przewijamy wskaznik na poczatek pliku
+                # jesli plik zostal skasowany lub przeniesiony, przewijamy wskaznik na poczatek pliku
                 if current_position > os.stat(file_path).st_size:
                     file.seek(0)
             else:
                 sys.stdout.write(line)
-                sys.stdout.flush()  # Wymuszamy natychmiastowe wypisanie linii
+                sys.stdout.flush()
 
 def main() -> None:
-    args = setup_argparse()                
+    args = setup_argparse()
 
     if args.follow and not args.file:
         print("Błąd: Opcja -f/--follow wymaga podania ścieżki do pliku.", file=sys.stderr)
@@ -69,7 +67,7 @@ def main() -> None:
             print(f"Błąd: Plik '{args.file}' nie istnieje lub nie jest plikiem.", file=sys.stderr)
             sys.exit(1)
 
-        with open(args.file, 'r') as file:
+        with open(args.file, 'r', encoding='utf-8', errors='replace') as file:
             print_last_lines(file, args.lines)
 
         if args.follow:
