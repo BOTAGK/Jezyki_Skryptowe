@@ -40,6 +40,8 @@ def convert_file(input_path: Path, output_dir: Path, target_format: str) -> None
         result = subprocess.run(command,
                                 capture_output=True,
                                 text=True,
+                                encoding="utf-8",
+                                errors="replace",
                                 check=True)
         
         if result.returncode == 0:
