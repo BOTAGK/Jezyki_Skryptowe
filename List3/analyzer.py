@@ -12,7 +12,8 @@ def analyze_path(file_path: Path) -> dict:
     lines = content.splitlines()
     words = content.split()
 
-    char_counts = Counter(content)   
+    # nie liczymy bialych
+    char_counts = Counter(c for c in content if not c.isspace())   
     word_counts = Counter(words)
 
     most_freq_char = char_counts.most_common(1)[0][0] if char_counts else ""
@@ -24,7 +25,9 @@ def analyze_path(file_path: Path) -> dict:
         "total_words": len(words),
         "total_lines": len(lines),
         "most_freq_char": most_freq_char,
-        "most_freq_word": most_freq_word
+        "most_freq_word": most_freq_word,
+        "char_freqs": dict(char_counts),
+        "word_freqs": dict(word_counts)
     }
 
 def main():

@@ -24,6 +24,8 @@ def main():
         sys.exit(1)
 
     results = []
+    global_chars = Counter()
+    global_words = Counter()
 
     # sprawdzenie czy ścieżka jest plikiem
     for file_path in args.directory.iterdir():
@@ -42,6 +44,9 @@ def main():
             file_stats = json.loads(process.stdout)
             results.append(file_stats)
 
+            global_chars.update(file_stats.get("char_freqs", {}))
+            global_words.update(file_stats.get("word_freqs", {}))
+
     if not results:
         print("Nie znaleziono plików lub nie udało się ich przeanalizować.")
         return
@@ -52,8 +57,8 @@ def main():
     total_words = sum(stat["total_words"] for stat in results)
     total_lines = sum(stat["total_lines"] for stat in results)
 
-    global_chars = Counter(stat["most_freq_char"] for stat in results if stat["most_freq_char"])
-    global_words = Counter(stat["most_freq_word"] for stat in results if stat["most_freq_word"])
+    # global_chars = Counter(stat["most_freq_char"] for stat in results if stat["most_freq_char"])
+    # global_words = Counter(stat["most_freq_word"] for stat in results if stat["most_freq_word"])
 
     best_char = global_chars.most_common(1)[0][0] if global_chars else "Brak"
     best_word = global_words.most_common(1)[0][0] if global_words else "Brak"

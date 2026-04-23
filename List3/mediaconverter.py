@@ -42,7 +42,7 @@ def convert_file(input_path: Path, output_dir: Path, target_format: str) -> None
                                 text=True,
                                 encoding="utf-8",
                                 errors="replace",
-                                check=True)
+                                check=False)
         
         if result.returncode == 0:
             print(f"Zapisano jako: {out_filename}")
