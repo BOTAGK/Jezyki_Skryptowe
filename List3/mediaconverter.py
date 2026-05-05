@@ -33,8 +33,11 @@ def convert_file(input_path: Path, output_dir: Path, target_format: str) -> None
 
     if tool == "ffmpeg":
         command = ["ffmpeg", "-y", "-i", str(input_path), str(out_path)]
-    else:
+    elif tool == "magick":
         command = ["magick", str(input_path), str(out_path)]
+    elif tool == "pandoc":
+        command = ["pandoc", str(input_path), "-o", str(out_path)]
+
 
     try:
         result = subprocess.run(command,

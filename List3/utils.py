@@ -34,6 +34,9 @@ def detect_tool(file_path: Path) -> str | None:
         return "magick"
     elif type.startswith("video") or type.startswith("audio"):
         return "ffmpeg"
+    elif type.startswith("text") or type.startswith("md"):
+        return "pandoc"
+    
     
     return None
 
