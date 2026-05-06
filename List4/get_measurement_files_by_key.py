@@ -21,4 +21,4 @@ def group_measurement_files_by_key(path: Path) -> Dict[Tuple[str, str, str], lis
     return result
 
 if __name__ == '__main__':
-    print(group_measurement_files_by_key(Path('data/measurements')))
+    print(group_measurement_files_by_key(Path(__file__).parent.joinpath('data/measurements')))

@@ -5,8 +5,36 @@ from enum import Enum
 from pathlib import Path
 import re
 from typing import Dict, List, Optional, Tuple
+import sys
+import logging
 
+logger = logging.getLogger("__name__")
 
+class LoggedFile:
+    def __init__(self, path, mode, encoding):
+        self.path = path
+        self.mode = mode
+        self.encoding = encoding
+        self.file = None
+
+    def __enter__(self):
+        try:
+            self.file = open(self.path, self.mode, encoding=self.encoding)
+            logger.info(f"Otwarto plik: {self.path}")
+            return self
+        except IOError as e:
+            logger.error(f"Błąd krytyczny podczas otwierania pliku {self.path}: {e}")
+            sys.exit(1)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.file:
+            self.file.close()
+            logger.info(f"Zamknięto plik: {self.path}")
+
+    def __iter__(self):
+        for line in self.file:
+            logger.debug(f"Przeczytałem {len(line.encode(self.encoding))} bajtów")
+            yield line
 
 class StationColumn(str, Enum):
     ID = 'Nr'
@@ -79,8 +107,8 @@ class StationManager:
         """Parses the stations.csv file """
         station_dict = {}
 
-        with open(self.metadata_path, 'r', encoding='utf-8') as file:
-            reader = csv.DictReader(file, delimiter=';')
+        with LoggedFile(self.metadata_path, 'r', 'utf-8') as file:
+            reader = csv.DictReader(file, delimiter=',')
             
             for row in reader:
 
@@ -112,7 +140,7 @@ class StationManager:
 
     def parse_measurement_file(self, measurement_path: Path) -> Dict[str, List[Measurement]]:
         """Main method to parse a measurement file and store the measurements in the manager's data structure."""
-        with open(measurement_path, 'r', encoding='utf-8') as file:
+        with LoggedFile(measurement_path, 'r', 'utf-8') as file:
             reader = csv.reader(file, delimiter=',')
             
             metadata = self._extract_headers_and_mapping(reader)
@@ -212,7 +240,7 @@ class StationManager:
 
         target_path = path if path else self.metadata_path
 
-        with open(target_path, 'r', encoding='utf-8') as file:
+        with LoggedFile(target_path, 'r', 'utf-8') as file:
             reader = csv.DictReader(file, delimiter=';')
 
             for row in reader: 
