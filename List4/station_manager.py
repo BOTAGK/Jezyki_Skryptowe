@@ -111,7 +111,7 @@ class StationManager:
         return station_dict
 
     def parse_measurement_file(self, measurement_path: Path) -> Dict[str, List[Measurement]]:
-        """Główny orkiestrator: Otwiera plik i deleguje parsowanie do metod pomocniczych."""
+        """Main method to parse a measurement file and store the measurements in the manager's data structure."""
         with open(measurement_path, 'r', encoding='utf-8') as file:
             reader = csv.reader(file, delimiter=',')
             
