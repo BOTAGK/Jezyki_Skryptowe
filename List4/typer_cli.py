@@ -60,6 +60,8 @@ def main_callback(
         end=end
     )
 
+
+
 @app.command("random")
 def random_station(ctx: typer.Context):
     """Writes info about a random station that has measurements in the given time range."""
@@ -86,6 +88,37 @@ def random_station(ctx: typer.Context):
         print(f"Adres: {stacja.city}, {stacja.address}")
         print(f"Kod:   {stacja.code}\n")
 
+
+@app.command("worst-station")
+def worst_station(ctx: typer.Context):
+    """Finds and writes info about the station with the worst average value in the given time range."""
+    
+    state: AppState = ctx.obj
+    
+    worst_code = None
+    worst_avg = float('-inf')
+    
+    
+    for code, pomiary in state.manager.measurements_data.items():
+        values = [p.value for p in pomiary if state.start <= p.timestamp <= state.end]
+        if values:
+            avg = statistics.mean(values)
+            if avg > worst_avg:
+                worst_avg = avg
+                worst_code = code
+                
+    if worst_code is None:
+        typer.secho("Brak pomiarów dla tych parametrów w danym czasie.", fg=typer.colors.RED)
+        raise typer.Exit()
+        
+    stacja = state.manager.stations_data.get(worst_code)
+    
+    if stacja:
+        typer.secho("\n--- NAJGORSZA STACJA ---", fg=typer.colors.RED, bold=True)
+        print(f"Nazwa: {stacja.name}")
+        print(f"Adres: {stacja.city}, {stacja.address}")
+        print(f"Kod:   {stacja.code}")
+        print(f"Średnia wartość: {worst_avg:.4f}\n")
 
 @app.command("stats")
 def station_stats(
