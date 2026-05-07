@@ -131,21 +131,37 @@ def calculate_stats(parameter: str, frequency: str, start: datetime, end: dateti
     print(f"Średnia: {avg:.2f}")
     print(f"Odchylenie standardowe: {std:.2f}")
 
-def calculate_worst_station(start: datetime, end: datetime):
+def calculate_worst_station(parameter: str, frequency: str, start: datetime, end: datetime, valid_params: set, valid_freq: set):
     """Finds and writes info about the station with the worst average value in the given time range."""
     
     worst_code = None
     worst_avg = float('-inf')
 
     manager = get_station_manager()
-    
-    for code, pomiary in manager.measurements_data.items():
-        values = [p.value for p in pomiary if start <= p.timestamp <= end]
-        if values:
-            avg = statistics.mean(values)
-            if avg > worst_avg:
-                worst_avg = avg
-                worst_code = code
+    directory = Path(__file__).parent.joinpath(MEASUREMENTS_PATH)
+    grouped = group_measurement_files_by_key(directory)
+
+    valid_files = []
+    for (rok, param, freq), paths in grouped.items():
+        if param == parameter and freq == frequency:
+            if start.year <= int(rok) <= end.year:
+                valid_files.extend(paths)
+
+    if not valid_files:
+        logger.warning("Brak dostępnych plików pomiarowych dla podanego parametru i częstotliwości.")
+
+    for file_path in valid_files:
+        manager.measurements_data.clear()
+        manager.parse_measurement_file(file_path)
+
+        for code, pomiary in manager.measurements_data.items():
+
+            values = [p.value for p in pomiary if start <= p.timestamp <= end]
+            if values:
+                avg = statistics.mean(values)
+                if avg > worst_avg:
+                    worst_avg = avg
+                    worst_code = code
                 
     if worst_code is None:
         logger.warning("Brak pomiarów dla tych parametrów w danym czasie.")
@@ -179,6 +195,9 @@ def run_cli():
     stats_parser = subparsers.add_parser("stats", help="Obliczenie średniej i odchylenia standardowego")
     stats_parser.add_argument("station", help="Kod stacji pomiarowej")
 
+    worst_parser = subparsers.add_parser("worst-station", help="Wyswietla stacje ktora ma największą średnią wartość zadanej wielkości w zadanym przedziale czasowym")
+    stats_parser.add_argument("worst-station", help="Wyswietla najgorsza stacje")
+
     args = parser.parse_args()
 
     if args.start > args.end:
@@ -190,7 +209,7 @@ def run_cli():
     elif args.command == "stats":
         calculate_stats(args.parameter, args.frequency, args.start, args.end, args.station, valid_params, valid_freq)
     elif args.command == "worst-station":
-        calculate_worst_station()    
+        calculate_worst_station(args.parameter, args.frequency, args.start, args.end, valid_params, valid_freq)    
     elif args.command is None:
         parser.print_help()
 
