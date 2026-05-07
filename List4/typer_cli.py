@@ -89,18 +89,19 @@ def random_station(ctx: typer.Context):
         print(f"Kod:   {stacja.code}\n")
 
 
-@app.command("worst-station")
+@app.command("worst")
 def worst_station(ctx: typer.Context):
-    """Finds and writes info about the station with the worst average value in the given time range."""
-    
     state: AppState = ctx.obj
     
     worst_code = None
-    worst_avg = float('-inf')
-    
-    
-    for code, pomiary in state.manager.measurements_data.items():
-        values = [p.value for p in pomiary if state.start <= p.timestamp <= state.end]
+    worst_avg = 0.0
+
+    for code, measurements in state.manager.measurements_data.items():
+        values = []
+        for m in measurements:
+            if state.start <= m.timestamp <= state.end:
+                values.append(m.value)
+
         if values:
             avg = statistics.mean(values)
             if avg > worst_avg:
@@ -111,13 +112,13 @@ def worst_station(ctx: typer.Context):
         typer.secho("Brak pomiarów dla tych parametrów w danym czasie.", fg=typer.colors.RED)
         raise typer.Exit()
         
-    stacja = state.manager.stations_data.get(worst_code)
+    station = state.manager.stations_data.get(worst_code)
     
-    if stacja:
+    if station:
         typer.secho("\n--- NAJGORSZA STACJA ---", fg=typer.colors.RED, bold=True)
-        print(f"Nazwa: {stacja.name}")
-        print(f"Adres: {stacja.city}, {stacja.address}")
-        print(f"Kod:   {stacja.code}")
+        print(f"Nazwa: {station.name}")
+        print(f"Adres: {station.city}, {station.address}")
+        print(f"Kod:   {station.code}")
         print(f"Średnia wartość: {worst_avg:.4f}\n")
 
 @app.command("stats")
@@ -174,21 +175,16 @@ def find_anomalies(
         raise typer.Exit()
         
     typer.secho(f"\nSkanowanie {len(pomiary)} pomiarów stacji {station} ({state.metric.value})...", fg=typer.colors.CYAN)
-    
-    # Inicjalizujemy detektor. 
-    # Uwaga: Dla Hg(TGM) wartości to zazwyczaj ~1.5 ng/m3, więc progi muszą być małe.
-    # Jeśli badasz PM10, możesz ustawić spike_threshold=50.0, alarm_threshold=200.0
+
     if state.metric.value == "Hg(TGM)":
         detector = AnomalyDetector(spike_threshold=1.0, alarm_threshold=5.0)
     else:
         detector = AnomalyDetector(spike_threshold=50.0, alarm_threshold=200.0)
         
     znalezione_anomalie = detector.analyze(pomiary)
-    
-    # Wyświetlanie wyników
+
     if znalezione_anomalie:
-        typer.secho(f"⚠️ Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
-        # Wyświetlamy max 15 pierwszych anomalii, żeby nie zawiesić konsoli przy milionie błędów
+        typer.secho(f"Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
         for anomalia in znalezione_anomalie[:15]:
             print(f" - {anomalia}")
             
