@@ -240,7 +240,7 @@ class StationManager:
 
         target_path = path if path else self.metadata_path
 
-        with LoggedFile(target_path, 'r', 'utf-8') as file:
+        with open(target_path, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file, delimiter=';')
 
             for row in reader: 
@@ -321,3 +321,47 @@ class StationManager:
             if self.comma_street_regex.match(station.address):
                 comma_addresses.append(station.address)
         return comma_addresses
+
+if __name__ == "__main__":
+    # 1. Inicjalizacja managera (podaj ścieżkę do swojego pliku stacje.csv)
+    # Jeśli plik jest w tym samym folderze, wystarczy Path("stacje.csv")
+    manager = StationManager(Path("List4/data/station/stacje.csv"))
+
+    print("=== TEST METADANYCH (Zadanie 1 & 4) ===")
+    # Wyświetl 2 przykładowe stacje
+    sample_stations = list(manager.stations_data.keys())[:2]
+    for code in sample_stations:
+        s = manager.stations_data[code]
+        print(f"Kod: {s.code} | Miasto: {s.city} | Nazwa: {s.name} | Współrzędne: ({s.lat}, {s.lon})")
+
+    # Test zadania 4e (Weryfikacja stacji mobilnych)
+    print(f"\nCzy stacje MOB są poprawne? {manager.verify_mob_stations()}")
+
+    # Test zadania 4d (Normalizacja nazw - pierwsze 3)
+    print(f"Znormalizowane nazwy (sample): {manager.get_normalized_names()[:3]}")
+
+    print("\n=== TEST POMIARÓW (Zadanie 1) ===")
+    # 2. Parsowanie pliku pomiarowego (podaj ścieżkę do swojego pliku .csv z measurements)
+    # Zmień nazwę na taką, którą masz na dysku!
+    measurement_file = Path("List4/data/measurements/2023_Hg(TGM)_1g.csv")
+
+    if measurement_file.exists():
+        manager.parse_measurement_file(measurement_file)
+
+        # Sprawdźmy czy wczytało dane dla jakiejś stacji z tego pliku
+        # Wyciągamy kod pierwszej stacji, która ma jakiekolwiek pomiary
+        active_stations = [code for code, measurements in manager.measurements_data.items() if measurements]
+
+        if active_stations:
+            target_code = active_stations[0]
+            m_list = manager.measurements_data[target_code]
+            print(f"Wczytano {len(m_list)} pomiarów dla stacji: {target_code}")
+
+            # Wyświetl 3 pierwsze pomiary
+            print("Przykładowe dane:")
+            for m in m_list[:3]:
+                print(f"  - Czas: {m.timestamp} | Wartość: {m.value} {m.unit} | Parametr: {m.parameter}")
+        else:
+            print("Parser zadziałał, ale nie znalazł żadnych wartości liczbowych w pliku.")
+    else:
+        print(f"BŁĄD: Nie znaleziono pliku pomiarów: {measurement_file}")
