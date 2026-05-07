@@ -38,7 +38,7 @@ def main_callback(
     freq: FreqType = typer.Option(..., help="Częstotliwość"),
     start: datetime = typer.Option(..., formats=["%Y-%m-%d"], help="Początek (RRRR-MM-DD)"),
     end: datetime = typer.Option(..., formats=["%Y-%m-%d"], help="Koniec (RRRR-MM-DD)"),
-    data_dir: Path = typer.Option(Path("data"), help="Główny katalog z danymi")
+    data_dir: Path = typer.Option(Path(__file__).with_name("data"), help="Główny katalog z danymi")
 ):
     """Global parameters for the entire application."""
     

@@ -33,23 +33,6 @@ def setup_logging() -> None:
     logger.addHandler(stdout_handler)
     logger.addHandler(stderr_handler)
 
-def setup_argparse() -> argparse.Namespace:
-    valid_params, valid_freq = get_valid_measurement(Path(__file__).parent.joinpath(MEASUREMENTS_PATH))
-
-    parser = argparse.ArgumentParser(description="Podstawowy interfejs linii komend")
-    parser.add_argument("parameter", required=True, choices=valid_params, help="Mierzona wielkość np. PM2.5, PM10, NO")
-    parser.add_argument("frequency", required=True, choices=valid_freq, help="Częstotliwość pomiaru np. 1g, 24g")
-    parser.add_argument("start", required=True, type=validate_date, help="Początek przedziału czasowego w formacie rrrr-mm-dd")
-    parser.add_argument("end", required=True, type=validate_date, help="Koniec przedziału czasowego w formacie rrrr-mm-dd")
-
-    args = parser.parse_args()
-    if args.start < args.end:
-        parser.error("Początek zakresu dat jest większy od końca")
-
-    parser.add_subparsers(title="random", description="Wypisanie nazwy i adresu losowej stacji, która w zadanym przedziale czasowym mierzy tę wielkość")
-
-    return args
-
 def get_valid_measurement(dictionary: Path) -> tuple[set[str], set[str]]:
     grouped_measurements = group_measurement_files_by_key(dictionary)
 
@@ -66,10 +49,6 @@ def validate_date(value: str) -> datetime:
         return datetime.strptime(value, "%Y-%m-%d")
     except ValueError:
         raise argparse.ArgumentTypeError(f'{value} nie jest poprawną datą'"")
-
-
-
-
 
 def get_station_manager() -> StationManager:
     return StationManager(Path(__file__).parent.joinpath(STATIONS_PATH))
@@ -110,7 +89,7 @@ def print_random_station(parameter: str, frequency: str, start: datetime, end: d
     random_station_code = random.choice(list(stations_with_measurements))
     station = manager.stations_data.get(random_station_code)
     if station:
-        print(f"Nazwa: {station.name}, Adres: {station.address}")
+        print(f"Nazwa: {station.name}, Adres: {station.address}, Kod: {station.code}")
     else:
         print(f"Stacja: {random_station_code} (Brak szczegółowych danych)")
 
