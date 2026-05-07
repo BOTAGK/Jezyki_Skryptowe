@@ -131,6 +131,36 @@ def calculate_stats(parameter: str, frequency: str, start: datetime, end: dateti
     print(f"Średnia: {avg:.2f}")
     print(f"Odchylenie standardowe: {std:.2f}")
 
+def calculate_worst_station(start: datetime, end: datetime):
+    """Finds and writes info about the station with the worst average value in the given time range."""
+    
+    worst_code = None
+    worst_avg = float('-inf')
+
+    manager = get_station_manager()
+    
+    for code, pomiary in manager.measurements_data.items():
+        values = [p.value for p in pomiary if start <= p.timestamp <= end]
+        if values:
+            avg = statistics.mean(values)
+            if avg > worst_avg:
+                worst_avg = avg
+                worst_code = code
+                
+    if worst_code is None:
+        logger.warning("Brak pomiarów dla tych parametrów w danym czasie.")
+        return
+        
+    stacja = manager.stations_data.get(worst_code)
+    
+    if stacja:
+        logger.warning("\n--- NAJGORSZA STACJA ---")
+        print(f"Nazwa: {stacja.name}")
+        print(f"Adres: {stacja.city}, {stacja.address}")
+        print(f"Kod:   {stacja.code}")
+        print(f"Średnia wartość: {worst_avg:.4f}\n")
+
+
 def run_cli():
     setup_logging()
 
@@ -159,6 +189,8 @@ def run_cli():
         print_random_station(args.parameter, args.frequency, args.start, args.end, valid_params, valid_freq)
     elif args.command == "stats":
         calculate_stats(args.parameter, args.frequency, args.start, args.end, args.station, valid_params, valid_freq)
+    elif args.command == "worst-station":
+        calculate_worst_station()    
     elif args.command is None:
         parser.print_help()
 
