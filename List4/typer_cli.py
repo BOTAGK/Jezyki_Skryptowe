@@ -175,9 +175,7 @@ def find_anomalies(
         
     typer.secho(f"\nSkanowanie {len(pomiary)} pomiarów stacji {station} ({state.metric.value})...", fg=typer.colors.CYAN)
     
-    # Inicjalizujemy detektor. 
-    # Uwaga: Dla Hg(TGM) wartości to zazwyczaj ~1.5 ng/m3, więc progi muszą być małe.
-    # Jeśli badasz PM10, możesz ustawić spike_threshold=50.0, alarm_threshold=200.0
+
     if state.metric.value == "Hg(TGM)":
         detector = AnomalyDetector(spike_threshold=1.0, alarm_threshold=5.0)
     else:
@@ -185,10 +183,9 @@ def find_anomalies(
         
     znalezione_anomalie = detector.analyze(pomiary)
     
-    # Wyświetlanie wyników
     if znalezione_anomalie:
-        typer.secho(f"⚠️ Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
-        # Wyświetlamy max 15 pierwszych anomalii, żeby nie zawiesić konsoli przy milionie błędów
+        typer.secho(f"Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
+
         for anomalia in znalezione_anomalie[:15]:
             print(f" - {anomalia}")
             

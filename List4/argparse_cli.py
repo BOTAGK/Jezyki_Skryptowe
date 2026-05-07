@@ -149,7 +149,7 @@ def calculate_worst_station(parameter: str, frequency: str, start: datetime, end
 
     if not valid_files:
         logger.warning("Brak dostępnych plików pomiarowych dla podanego parametru i częstotliwości.")
-
+        
     for file_path in valid_files:
         manager.measurements_data.clear()
         manager.parse_measurement_file(file_path)
