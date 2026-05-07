@@ -60,8 +60,6 @@ def main_callback(
         end=end
     )
 
-
-
 @app.command("random")
 def random_station(ctx: typer.Context):
     """Writes info about a random station that has measurements in the given time range."""

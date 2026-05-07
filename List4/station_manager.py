@@ -10,6 +10,27 @@ import logging
 
 logger = logging.getLogger("__name__")
 
+class StdoutFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.levelno <= logging.WARNING
+
+def setup_logging() -> None:
+    logger.setLevel(logging.DEBUG)
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.addFilter(StdoutFilter())
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    stdout_handler.setFormatter(formatter)
+
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.ERROR)
+    stderr_handler.setFormatter(formatter)
+
+    logger.addHandler(stdout_handler)
+    logger.addHandler(stderr_handler)
+
+
 class LoggedFile:
     def __init__(self, path, mode, encoding):
         self.path = path
@@ -33,7 +54,7 @@ class LoggedFile:
 
     def __iter__(self):
         for line in self.file:
-            logger.debug(f"Przeczytałem {len(line.encode(self.encoding))} bajtów")
+            logger.debug(f"Przeczytano {len(line.encode(self.encoding))} bajtów")
             yield line
 
 class StationColumn(str, Enum):
@@ -92,6 +113,7 @@ class StationManager:
         self.measurements_data = {}
 
         self._setup_patterns()
+        setup_logging()
 
     def _setup_patterns(self):
         self.address_regex = re.compile(r'^(.*?)(?:\s+(\d+[a-zA-Z\d/-]*))?$')    
