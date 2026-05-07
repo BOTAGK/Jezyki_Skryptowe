@@ -152,10 +152,9 @@ def find_anomalies(
         
     znalezione_anomalie = detector.analyze(pomiary)
     
-    # Wyświetlanie wyników
+    
     if znalezione_anomalie:
-        typer.secho(f"⚠️ Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
-        # Wyświetlamy max 15 pierwszych anomalii, żeby nie zawiesić konsoli przy milionie błędów
+        typer.secho(f"Wykryto {len(znalezione_anomalie)} anomalii!", fg=typer.colors.RED, bold=True)
         for anomalia in znalezione_anomalie[:15]:
             print(f" - {anomalia}")
             
