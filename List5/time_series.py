@@ -21,7 +21,7 @@ class TimeSeries:
         self.values = values
         self.unit = unit
 
-    def __getitem(self, key: Union[int, slice, datetime.date, datetime.datetime]):
+    def __getitem__(self, key: Union[int, slice, datetime.date, datetime.datetime]):
         if isinstance(key, int):
             return self.values[key]
         elif isinstance(key, slice):
