@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from List5.time_series import TimeSeries
+from time_series import TimeSeries
 
 class SeriesValidator(ABC):
 
     @abstractmethod
-    def anazlyze(self, series: 'TimeSeries') -> List[str]:
+    def analyze(self, series: 'TimeSeries') -> List[str]:
         pass
 
 class OutlierDetector(SeriesValidator):

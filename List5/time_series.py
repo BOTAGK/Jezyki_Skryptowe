@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 import statistics
 from typing import List, Optional, Union
 
@@ -7,13 +7,13 @@ class TimeSeries:
     station_name: str
     station_code: str
     averaging_time: str
-    dates: List[datetime.datetime]
+    dates: List[datetime]
     values: List[Optional[float]]
     unit: str
 
     
     def __init__(self, name: str, station_code: str, averaging_time: str, 
-                 dates: List[datetime.datetime], values: List[Optional[float]], unit: str):
+                 dates: List[datetime], values: List[Optional[float]], unit: str):
         self.station_name = name
         self.station_code = station_code
         self.averaging_time = averaging_time
@@ -21,13 +21,13 @@ class TimeSeries:
         self.values = values
         self.unit = unit
 
-    def __getitem__(self, key: Union[int, slice, datetime.date, datetime.datetime]):
+    def __getitem__(self, key: Union[int, slice, date, datetime]):
         if isinstance(key, int):
             return self.values[key]
         elif isinstance(key, slice):
             return list(zip(self.dates[key], self.values[key]))
         
-        elif isinstance(key, (datetime.date, datetime.datetime)):
+        elif isinstance(key, (date, datetime)):
             results = []
             
             for i, date_obj in enumerate(self.dates):
