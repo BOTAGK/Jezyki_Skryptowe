@@ -21,7 +21,7 @@ class OutlierDetector(SeriesValidator):
         stddev = series.stddev
 
         if mean is None or stddev is None:
-            return [f"[{series.station_code}] Series {series.name} has insufficient data for analysis."]
+            return [f"[{series.station_code}] Series {series.station_name} has insufficient data for analysis."]
         
         for data, value in zip(series.dates, series.values):
             if value is None:

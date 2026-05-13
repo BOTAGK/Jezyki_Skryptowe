@@ -162,15 +162,19 @@ class Measurements:
             )
             metadata.loaded_series[st_code] = ts
 
-    def detect_all_anomalies(self, validators: list[SeriesValidator], preload: bool = False) -> list[str]:
-        results: list[str] = []
+    def detect_all_anomalies(self, validators: list[SeriesValidator], preload: bool = False) -> dict[str, list[str]]:
+        results: dict[str, list[str]] = {}
 
         for metadata in self._files_index:
             if preload:
                 self._load_data_if_needed(metadata)
 
             for series in metadata.loaded_series.values():
+                dict_key = f'{series.station_name}_{metadata.frequency}'
+                if dict_key not in results:
+                    results[dict_key] = []
+
                 for validator in validators:
-                    results.extend(validator.analyze(series))
+                    results[dict_key].extend(validator.analyze(series))
 
         return results
