@@ -89,9 +89,9 @@ class Measurements:
         with open(file_path, mode='r', encoding=Config.ENCODING) as f:
             reader = csv.reader(f)
             try:
-                next(reader)          
+                next(reader)
                 header = next(reader)
-                return header[1:]   
+                return header[1:]
             except StopIteration:
                 return []
 
@@ -117,7 +117,7 @@ class Measurements:
                 if not row:
                     continue
                 self._process_measurement_row(row, metadata.stations, dates, values_dict)
-                
+
         return dates, values_dict
 
     def _skip_header_lines(self, reader, count: int) -> None:
@@ -125,7 +125,7 @@ class Measurements:
         for _ in range(count):
             next(reader, None)
 
-    def _process_measurement_row(self, row: List[str], stations: List[str], 
+    def _process_measurement_row(self, row: List[str], stations: List[str],
                                  dates: List, values_dict: Dict[str, list]) -> None:
         """Function to process a single measurement row."""
         date_obj = self._parse_date(row[0])
@@ -147,7 +147,11 @@ class Measurements:
         val_str = row[index].strip() if index < len(row) else ""
         if not val_str:
             return None
-        return float(val_str.replace(',', '.'))
+        try:
+            return float(val_str.replace(',', '.'))
+        except ValueError:
+            return None
+
 
     def _instantiate_time_series(self, metadata: FileMetadata, dates: List, values_dict: Dict[str, list]) -> None:
         """Function to instantiate TimeSeries objects from loaded data."""
@@ -178,3 +182,4 @@ class Measurements:
                     results[dict_key].extend(validator.analyze(series))
 
         return results
+
