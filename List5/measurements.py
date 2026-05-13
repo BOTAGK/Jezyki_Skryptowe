@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Dict
 from dataclasses import dataclass, field
 
-from List5.time_series import TimeSeries
+from time_series import TimeSeries
+from series_validator import SeriesValidator
 
 
 class Config:
@@ -160,3 +161,16 @@ class Measurements:
                 unit=Config.DEFAULT_UNIT
             )
             metadata.loaded_series[st_code] = ts
+
+    def detect_all_anomalies(self, validators: list[SeriesValidator], preload: bool = False) -> list[str]:
+        results: list[str] = []
+
+        for metadata in self._files_index:
+            if preload:
+                self._load_data_if_needed(metadata)
+
+            for series in metadata.loaded_series.values():
+                for validator in validators:
+                    results.extend(validator.analyze(series))
+
+        return results
