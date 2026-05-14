@@ -43,7 +43,18 @@ class TimeSeries:
             
             return results[0] if len(results) == 1 else results
 
-        raise TypeError(f"Invalid key type: {type(key)}. Expected int, slice, datetime.date, or datetime.datetime.")   
+        raise TypeError(f"Invalid key type: {type(key)}. Expected int, slice, datetime.date, or datetime.datetime.")  
+
+    def __set_unit__(self, unit: str) -> None:
+        if self.unit == "ug/m3" and unit == "ng/m3":
+            self.unit = unit
+            self.values = [v * 1000 if v is not None else None for v in self.values] 
+        elif self.unit == "ng/m3" and unit == "ug/m3":
+            self.unit = unit
+            self.values = [v / 1000 if v is not None else None for v in self.values]
+        else:
+            raise ValueError(f"Invalid units: self - {self.unit} and unit - {unit}")   
+            
 
     @property
     def mean(self) -> Optional[float]:
@@ -66,16 +77,7 @@ class TimeSeries:
         return max(valid_values) if valid_values else None
 
     @property
-    def unit(self) -> Optional[str]:
+    def get_unit(self) -> Optional[str]:
         return self.unit
 
-    def __set__(self, unit: str) -> None:
-        if self.unit == "ug/m3" and unit == "ng/m3":
-            self.unit = unit
-            self.values = [v * 1000 if v is not None else None for v in self.values] 
-        elif self.unit == "ng/m3" and unit == "ug/m3":
-            self.unit = unit
-            self.values = [v / 1000 if v is not None else None for v in self.values]
-        else:
-            raise ValueError(f"Invalid units: self - {self.unit} and unit - {unit}")   
-           
+    
