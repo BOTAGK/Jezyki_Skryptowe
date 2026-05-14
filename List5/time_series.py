@@ -67,16 +67,6 @@ class TimeSeries:
         return statistics.stdev(valid_values) if len(valid_values) > 1 else None
 
     @property
-    def min(self) -> Optional[float]:
-        valid_values = [v for v in self.values if v is not None]
-        return min(valid_values) if valid_values else None
-    
-    @property
-    def max(self) -> Optional[float]:
-        valid_values = [v for v in self.values if v is not None]
-        return max(valid_values) if valid_values else None
-
-    @property
     def get_unit(self) -> Optional[str]:
         return self.unit
 
