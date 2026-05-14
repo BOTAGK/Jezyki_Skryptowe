@@ -54,4 +54,28 @@ class TimeSeries:
     def stddev(self) -> Optional[float]:
         valid_values = [v for v in self.values if v is not None]
         return statistics.stdev(valid_values) if len(valid_values) > 1 else None
-                
+
+    @property
+    def min(self) -> Optional[float]:
+        valid_values = [v for v in self.values if v is not None]
+        return min(valid_values) if valid_values else None
+    
+    @property
+    def max(self) -> Optional[float]:
+        valid_values = [v for v in self.values if v is not None]
+        return max(valid_values) if valid_values else None
+
+    @property
+    def unit(self) -> Optional[str]:
+        return self.unit
+
+    def __set__(self, unit: str) -> None:
+        if self.unit == "ug/m3" and unit == "ng/m3":
+            self.unit = unit
+            self.values = [v * 1000 if v is not None else None for v in self.values] 
+        elif self.unit == "ng/m3" and unit == "ug/m3":
+            self.unit = unit
+            self.values = [v / 1000 if v is not None else None for v in self.values]
+        else:
+            raise ValueError(f"Invalid units: self - {self.unit} and unit - {unit}")   
+           

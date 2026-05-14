@@ -1,6 +1,7 @@
 import csv
 import datetime
 from pathlib import Path
+import re
 from typing import List, Optional, Tuple, Dict
 from dataclasses import dataclass, field
 
@@ -16,6 +17,7 @@ class Config:
     DEFAULT_UNIT = "ng/m3"
     UNKNOWN_VALUE = "unknown"
     HEADER_LINES_TO_SKIP_FOR_DATA = 6
+    FILENAME_REGEX = re.compile(r"^(\d{4})_(.+?)_(\d+[a-zA-Z]+)(?:_\d+)?\.csv$")
 
 
 @dataclass
@@ -76,13 +78,23 @@ class Measurements:
         year, parameter, frequency = self._parse_filename(file_path)
         stations = self._extract_stations_from_header(file_path)
         return FileMetadata(file_path, parameter, frequency, year, stations)
-
+    
     def _parse_filename(self, file_path: Path) -> Tuple[str, str, str]:
-        """Function to parse the filename and extract year, parameter, and frequency. Assumes a specific naming convention."""
-        parts = file_path.stem.split('_')
-        if len(parts) == 3:
-            return parts[0], parts[1], parts[2]
+        """Function to parse the filename using a strict regex pattern."""
+        match = Config.FILENAME_REGEX.fullmatch(file_path.name)
+        
+        if match:
+            year, parameter, frequency = match.groups()
+            return year, parameter, frequency
+            
         return Config.UNKNOWN_VALUE, file_path.stem, Config.UNKNOWN_VALUE
+
+    # def _parse_filename(self, file_path: Path) -> Tuple[str, str, str]:
+    #     """Function to parse the filename and extract year, parameter, and frequency. Assumes a specific naming convention."""
+    #     parts = file_path.stem.split('_')
+    #     if len(parts) == 3:
+    #         return parts[0], parts[1], parts[2]
+    #     return Config.UNKNOWN_VALUE, file_path.stem, Config.UNKNOWN_VALUE
 
     def _extract_stations_from_header(self, file_path: Path) -> List[str]:
         """Function to extract station codes from the header of a CSV file."""
