@@ -54,4 +54,26 @@ class TimeSeries:
     def stddev(self) -> Optional[float]:
         valid_values = [v for v in self.values if v is not None]
         return statistics.stdev(valid_values) if len(valid_values) > 1 else None
-                
+
+    @property
+    def get_unit(self) -> Optional[str]:
+        return self.unit
+
+    def set_unit(self, new_unit: str) -> None:
+        if (self.unit == ('ug/m3' or 'ng/m3')) and (new_unit == ('ug/m3' or 'ng/m3')):
+            self.unit = new_unit
+        else:
+            raise ValueError(f"Invalid unit conversion from {self.unit} to {new_unit}. Only 'ug/m3' and 'ng/m3' are supported.")
+
+        if self.unit == 'ng/m3' and new_unit == 'ug/m3':
+            new_values = [v * 1000 for v in self.values if v is not None]
+            self.values = new_values
+            # for i, value in enumerate(self.values):
+            #     if value is not None:
+            #         self.values[i] = value/1000
+        elif self.unit == 'ug/m3' and new_unit == 'ng/m3':
+            new_values = [v * 1000 for v in self.values if v is not None]
+            self.values = new_values
+            # for i, value in enumerate(self.values):
+            #     if value is not None:
+            #         self.values[i] = value*1000
