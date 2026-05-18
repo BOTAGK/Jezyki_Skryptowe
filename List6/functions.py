@@ -1,4 +1,4 @@
-from functools import reduce
+from functools import reduce, cache
 import math
 import operator
 from typing import Any
@@ -43,8 +43,8 @@ def  quicksort(xs: list[int]) -> list[int]:
 
             return quicksort(lesser) + [pivot] + quicksort(greater)   
         
-print(median([1, 1, 19, 2, 3, 4, 4, 5, 1]))   
-print(dumb_median([1, 1, 19, 2, 3, 4, 4, 5, 1]))     
+print(median([1, 1, 19, 2, 3, 4, 4, 5, 1]))
+print(dumb_median([1, 1, 19, 2, 3, 4, 4, 5, 1]))
 
 def newton_sqrt(S: float, e: float) -> float:
     def iterate(guess: float) -> float:
@@ -54,7 +54,7 @@ def newton_sqrt(S: float, e: float) -> float:
 
 print(newton_sqrt(25, 0.0001))
 
-def make_alpha_dict(text: str) -> dict[str, str]:
+def make_alpha_dict(text: str) -> dict[str, list[str]]:
     words = text.split()
     #set was braking order by hash thats why we use dict.fromkeys
     return { char: [word for word in words if char in word ]
@@ -74,7 +74,7 @@ def flatten(xs: Any) -> list[Any]:
         
 print(flatten([1, [2, 3], [[4, 5], 6]]))        
 
-def group_anagrams(xs: list[str]) -> dict[str, str]:
+def group_anagrams(xs: list[str]) -> dict[str, list[str]]:
     return {
         canonical:
         [word for word in xs if "".join(sorted(word)) == canonical]
@@ -119,7 +119,7 @@ def make_generator[T](f: Callable[[int], T]) -> Iterator[T]:
 def fibonacci(n: int) -> int:
     if n <= 2:
         return 1
-    
+
     a, b = 1, 1
     for _ in range(n - 2):
         a, b = b, a + b
@@ -132,9 +132,32 @@ gen_fib = make_generator(fibonacci)
 
 print("Ciąg Fibonacciego (pierwsze 5 wyrazów):")
 for _ in range(5):
-    print(next(gen_fib))        
+    print(next(gen_fib))
 
 gen_catalan = make_generator(catalan)
 print("Ciąg Catelana (pierwsze 5 wyrazów):")
 for _ in range(5):
-    print(next(gen_catalan))     
+    print(next(gen_catalan))
+
+gen_geom = make_generator(lambda x: 2 ** x)
+print("Ciąg geometryczny 2**x:")
+for _ in range(5):
+    print(next(gen_geom))
+
+def make_generator_mem[T](f: Callable[[int], T]) -> Iterator[T]:
+    cache_f = cache(f)
+    return make_generator(cache_f)
+
+@cache
+def fib_recursive(n: int) -> int:
+    if n == 0:
+        return 0
+
+    if n == 1:
+        return 1
+    return fib_recursive(n - 1) + fib_recursive(n - 2)
+
+gen_fib_mem = make_generator_mem(fibonacci)
+print("Rekurencyjny ciąg Fibonacciego (pierwsze 5 wyrazów):")
+for _ in range(5):
+    print(next(gen_fib_mem))

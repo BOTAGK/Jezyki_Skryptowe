@@ -2,7 +2,7 @@ import string
 import random
 from collections.abc import Iterator
 
-class PasswrodGenerator:
+class PasswordGenerator:
     length: int
     count: int
     charset: str
@@ -24,10 +24,11 @@ class PasswrodGenerator:
         password = "".join(random.choices(self.charset, k=self.length))
         self.current += 1
         return password
-    
-gen = PasswrodGenerator(8, 3)
-print("first password:", next(gen))
 
-print("Next passwords:")
-for pas in gen:
-    print(pas)
+if __name__ == "__main__":
+    gen = PasswordGenerator(8, 3)
+    print("first password:", next(gen))
+
+    print("Next passwords:")
+    for pas in gen:
+        print(pas)
