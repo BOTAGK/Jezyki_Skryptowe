@@ -25,26 +25,26 @@ def dumb_median(xs: list[int]) -> float:
     return xs[mid] if n % 2 != 0 else (xs[mid - 1] + xs[mid]) / 2.0
 
 def median(xs: list[int]) -> float:
-    sorted_xs = quicksort(xs)
+    sorted_xs = sorted(xs)
     n = len(xs)
 
     mid = n // 2
 
     return sorted_xs[mid] if n % 2 != 0 else (sorted_xs[mid - 1] + sorted_xs[mid]) / 2.0
     
-def  quicksort(xs: list[int]) -> list[int]:
-    match xs:
-        case []:
-            return []
+# def  quicksort(xs: list[int]) -> list[int]:
+#     match xs:
+#         case []:
+#             return []
+#
+#         case [pivot, *tail]:
+#             lesser = list(filter(lambda x: x <= pivot, tail))
+#             greater = list(filter(lambda x: x > pivot, tail))
+#
+#             return quicksort(lesser) + [pivot] + quicksort(greater)
         
-        case [pivot, *tail]:
-            lesser = list(filter(lambda x: x <= pivot, tail))
-            greater = list(filter(lambda x: x > pivot, tail))
-
-            return quicksort(lesser) + [pivot] + quicksort(greater)   
-        
-print(median([1, 1, 19, 2, 3, 4, 4, 5, 1]))
-print(dumb_median([1, 1, 19, 2, 3, 4, 4, 5, 1]))
+print(median([1, 1, 19, 2, 3, 4, 1, 5, 1]))
+print(dumb_median([1, 1, 19, 2, 3, 4, 1, 5, 1]))
 
 def newton_sqrt(S: float, e: float) -> float:
     def iterate(guess: float) -> float:
@@ -64,14 +64,23 @@ def make_alpha_dict(text: str) -> dict[str, list[str]]:
 print(make_alpha_dict("on i ona"))
 
 def flatten(xs: Any) -> list[Any]:
-    match xs:
-        case []:
-            return []
-        case (head, *tail):
-            return flatten(head) + flatten(tail)
-        case _:
-            return [xs]
-        
+    # match xs:
+    #     case []:
+    #         return []
+    #     case (head, *tail):
+    #         return flatten(head) + flatten(tail)
+    #     case _:
+    #         return [xs]
+    #
+
+    result = []
+    for x in xs:
+        if isinstance(x, list):
+            result.extend(flatten(x))
+        else:
+            result.append(x)
+    return result
+
 print(flatten([1, [2, 3], [[4, 5], 6]]))        
 
 def group_anagrams(xs: list[str]) -> dict[str, list[str]]:
