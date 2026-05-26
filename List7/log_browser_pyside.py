@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 )
 
 from List7.log_data import LogRecord, LogStore, record_display_text
-
+from List7.main_window import Ui_MainWindow
 
 
 class LogBrowserController:
@@ -222,24 +222,34 @@ class LogBrowserController:
         )
 
 
-def load_ui(ui_path: Path) -> QMainWindow:
-    loader = QUiLoader()
-    ui_file = QFile(str(ui_path))
-    if not ui_file.open(QFile.ReadOnly):
-        raise RuntimeError(f"Blad: Nie można otworzyć pliku UI: {ui_path}")
+# def load_ui(ui_path: Path) -> QMainWindow:
+#     loader = QUiLoader()
+#     ui_file = QFile(str(ui_path))
+#     if not ui_file.open(QFile.ReadOnly):
+#         raise RuntimeError(f"Blad: Nie można otworzyć pliku UI: {ui_path}")
+#
+#     window = loader.load(ui_file, None)
+#     ui_file.close()
+#
+#     if not isinstance(window, QMainWindow):
+#         raise RuntimeError("Blad: Nie udało się wczytać pliku UI")
+#
+#     return window
 
-    window = loader.load(ui_file, None)
-    ui_file.close()
 
-    if not isinstance(window, QMainWindow):
-        raise RuntimeError("Blad: Nie udało się wczytać pliku UI")
-
-    return window
-
+# def run_app(ui_path: Path) -> int:
+#     app = QApplication()
+#     window = load_ui(ui_path)
+#     window._controller = LogBrowserController(window)
+#     window.show()
+#     return app.exec()
 
 def run_app(ui_path: Path) -> int:
     app = QApplication()
-    window = load_ui(ui_path)
+    window = QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(window)
+
     window._controller = LogBrowserController(window)
     window.show()
     return app.exec()
