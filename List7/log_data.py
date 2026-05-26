@@ -54,10 +54,10 @@ def truncate_text(text: str, max_len: int = 30) -> str:
 
 
 def record_display_text(record: LogRecord, max_len: int = 30) -> str:
-    raw = record.raw.strip()
-    if not raw:
-        raw = f"{record.entry.id_orig_h} {record.entry.method} {record.entry.uri}"
-    return truncate_text(raw, max_len)
+    entry = record.entry
+    uri = truncate_text(entry.uri, max_len)
+    timestamp = entry.ts.strftime("%d/%b/%Y:%H:%M:%S")
+    return f'{entry.id_orig_h} - [{timestamp}] "{entry.method} {uri}"'
 
 
 def filter_by_datetime(

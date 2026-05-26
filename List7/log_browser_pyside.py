@@ -45,6 +45,7 @@ class LogBrowserController:
         self.to_time_edit = self._require(QTimeEdit, "toTimeEdit")
 
         self.detail_fields = {
+            "uid": self._require(QLineEdit, "uidEdit"),
             "remote_host": self._require(QLineEdit, "remoteHostEdit"),
             "host": self._require(QLineEdit, "hostEdit"),
             "date": self._require(QLineEdit, "dateEdit"),
@@ -77,8 +78,12 @@ class LogBrowserController:
         self.log_list.currentRowChanged.connect(self._on_row_changed)
 
     def _on_open(self) -> None:
-        file_path, _ = QFileDialog.getOpenFileName(self.window, "Open log file")
-        print(file_path)
+        file_path, _ = QFileDialog.getOpenFileName(
+            self.window,
+            "Open log file",
+            self._initial_directory(),
+            "Log files (*.log)",
+        )
         if not file_path:
             return
 
@@ -91,6 +96,10 @@ class LogBrowserController:
         self.file_path_line.setText(file_path)
         self._seed_filter_range()
         self._refresh_list()
+
+    def _initial_directory(self) -> str:
+        log_dir = Path(__file__).resolve().parents[1] / "List2" / "utils"
+        return str(log_dir if log_dir.exists() else Path(__file__).resolve().parent)
 
     def _seed_filter_range(self) -> None:
         if not self.store.records:
@@ -153,6 +162,7 @@ class LogBrowserController:
         ts = entry.ts
         tz_name = ts.tzname() or "UTC"
 
+        self.detail_fields["uid"].setText(entry.uid)
         self.detail_fields["remote_host"].setText(entry.id_orig_h)
         self.detail_fields["host"].setText(entry.host)
         self.detail_fields["date"].setText(ts.strftime("%Y-%m-%d"))

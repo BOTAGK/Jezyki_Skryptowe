@@ -120,7 +120,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="remoteHostLabel">
            <property name="text">
-            <string>Remote host</string>
+            <string>Remote host:</string>
            </property>
           </widget>
          </item>
@@ -134,7 +134,7 @@
          <item row="1" column="0">
           <widget class="QLabel" name="hostLabel">
            <property name="text">
-            <string>Host</string>
+            <string>Host:</string>
            </property>
           </widget>
          </item>
@@ -148,7 +148,7 @@
          <item row="2" column="0">
           <widget class="QLabel" name="dateLabel">
            <property name="text">
-            <string>Date</string>
+            <string>Date:</string>
            </property>
           </widget>
          </item>
@@ -162,7 +162,7 @@
          <item row="3" column="0">
           <widget class="QLabel" name="timeLabel">
            <property name="text">
-            <string>Time</string>
+            <string>Time:</string>
            </property>
           </widget>
          </item>
@@ -176,7 +176,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="timezoneLabel">
            <property name="text">
-            <string>Timezone</string>
+            <string>Timezone:</string>
            </property>
           </widget>
          </item>
@@ -190,7 +190,7 @@
          <item row="5" column="0">
           <widget class="QLabel" name="methodLabel">
            <property name="text">
-            <string>Method</string>
+            <string>Method:</string>
            </property>
           </widget>
          </item>
@@ -204,7 +204,7 @@
          <item row="6" column="0">
           <widget class="QLabel" name="statusCodeLabel">
            <property name="text">
-            <string>Status code</string>
+            <string>Status code:</string>
            </property>
           </widget>
          </item>
@@ -218,7 +218,7 @@
          <item row="7" column="0">
           <widget class="QLabel" name="statusTextLabel">
            <property name="text">
-            <string>Status text</string>
+            <string>Status text:</string>
            </property>
           </widget>
          </item>
@@ -232,7 +232,7 @@
          <item row="8" column="0">
           <widget class="QLabel" name="resourceLabel">
            <property name="text">
-            <string>Resource</string>
+            <string>Resource:</string>
            </property>
           </widget>
          </item>
@@ -246,7 +246,7 @@
          <item row="9" column="0">
           <widget class="QLabel" name="origPortLabel">
            <property name="text">
-            <string>Orig port</string>
+            <string>Orig port:</string>
            </property>
           </widget>
          </item>
@@ -260,7 +260,7 @@
          <item row="10" column="0">
           <widget class="QLabel" name="respHostLabel">
            <property name="text">
-            <string>Resp host</string>
+            <string>Resp host:</string>
            </property>
           </widget>
          </item>
@@ -274,12 +274,26 @@
          <item row="11" column="0">
           <widget class="QLabel" name="respPortLabel">
            <property name="text">
-            <string>Resp port</string>
+            <string>Resp port:</string>
            </property>
           </widget>
          </item>
          <item row="11" column="1">
           <widget class="QLineEdit" name="respPortEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="uidLabel">
+           <property name="text">
+            <string>UID:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="1">
+          <widget class="QLineEdit" name="uidEdit">
            <property name="readOnly">
             <bool>true</bool>
            </property>
