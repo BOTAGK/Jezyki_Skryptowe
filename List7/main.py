@@ -18,11 +18,8 @@ def main() -> None:
     from List7.log_browser_pyside import run_app
 
     ui_path = Path(__file__).with_name("ui") / "log_browser.ui"
-    run_app(ui_path)
-
+    # run_app(ui_path)
+    run_app()
 
 if __name__ == "__main__":
     main()
-
-
-
