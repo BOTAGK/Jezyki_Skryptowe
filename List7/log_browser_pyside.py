@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from datetime import date as date_type
-from datetime import datetime, time as time_type, timezone
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, TypeVar
+from typing import Optional
 
-from PySide6.QtCore import QFile, QDate, QTime
+from PySide6.QtCore import QFile, QDate, QDateTime, QTime
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
+    QDateTimeEdit,
     QFileDialog,
     QLineEdit,
     QListWidget,
@@ -16,8 +16,6 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
-    QDateEdit,
-    QTimeEdit,
 )
 
 from List7.log_data import LogRecord, LogStore, record_display_text
@@ -39,10 +37,8 @@ class LogBrowserController:
 
         self.log_list = self._require(QListWidget, "logList")
 
-        self.from_date_edit = self._require(QDateEdit, "fromDateEdit")
-        self.from_time_edit = self._require(QTimeEdit, "fromTimeEdit")
-        self.to_date_edit = self._require(QDateEdit, "toDateEdit")
-        self.to_time_edit = self._require(QTimeEdit, "toTimeEdit")
+        self.from_datetime_edit = self._require(QDateTimeEdit, "fromDateTimeEdit")
+        self.to_datetime_edit = self._require(QDateTimeEdit, "toDateTimeEdit")
 
         self.detail_fields = {
             "uid": self._require(QLineEdit, "uidEdit"),
@@ -109,17 +105,15 @@ class LogBrowserController:
         start_ts = min(timestamps)
         end_ts = max(timestamps)
 
-        self.from_date_edit.setDate(self._to_qdate(start_ts.date()))
-        self.from_time_edit.setTime(self._to_qtime(start_ts.time()))
-        self.to_date_edit.setDate(self._to_qdate(end_ts.date()))
-        self.to_time_edit.setTime(self._to_qtime(end_ts.time()))
+        self.from_datetime_edit.setDateTime(self._to_qdatetime(start_ts))
+        self.to_datetime_edit.setDateTime(self._to_qdatetime(end_ts))
 
     def _on_apply_filter(self) -> None:
         if not self.store.records:
             return
 
-        start_dt = self._combine_datetime(self.from_date_edit.date(), self.from_time_edit.time())
-        end_dt = self._combine_datetime(self.to_date_edit.date(), self.to_time_edit.time())
+        start_dt = self._qdatetime_to_py(self.from_datetime_edit.dateTime())
+        end_dt = self._qdatetime_to_py(self.to_datetime_edit.dateTime())
 
         if start_dt and end_dt and start_dt > end_dt:
             QMessageBox.warning(self.window, "Error", "Start must be before end.")
@@ -203,31 +197,29 @@ class LogBrowserController:
         if next_index < len(self.store.filtered):
             self.log_list.setCurrentRow(next_index)
 
-    def _combine_datetime(self, date_value: QDate, time_value: QTime) -> Optional[datetime]:
-        if not date_value.isValid() or not time_value.isValid():
+    def _qdatetime_to_py(self, value: QDateTime) -> Optional[datetime]:
+        if not value.isValid():
             return None
 
-        py_date = self._qdate_to_py(date_value)
-        py_time = self._qtime_to_py(time_value)
-        return datetime.combine(py_date, py_time).replace(tzinfo=timezone.utc)
-
-    def _qdate_to_py(self, date_value: QDate) -> date_type:
         try:
-            return date_value.toPython()
+            py_datetime = value.toPython()
         except AttributeError:
-            return date_type(date_value.year(), date_value.month(), date_value.day())
+            py_datetime = datetime(
+                value.date().year(),
+                value.date().month(),
+                value.date().day(),
+                value.time().hour(),
+                value.time().minute(),
+                value.time().second(),
+            )
 
-    def _qtime_to_py(self, time_value: QTime) -> time_type:
-        try:
-            return time_value.toPython()
-        except AttributeError:
-            return time_type(time_value.hour(), time_value.minute(), time_value.second())
+        return py_datetime.replace(tzinfo=timezone.utc)
 
-    def _to_qdate(self, value: date_type) -> QDate:
-        return QDate(value.year, value.month, value.day)
-
-    def _to_qtime(self, value: time_type) -> QTime:
-        return QTime(value.hour, value.minute, value.second)
+    def _to_qdatetime(self, value: datetime) -> QDateTime:
+        return QDateTime(
+            QDate(value.year, value.month, value.day),
+            QTime(value.hour, value.minute, value.second),
+        )
 
 
 def load_ui(ui_path: Path) -> QMainWindow:

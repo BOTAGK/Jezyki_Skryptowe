@@ -28,64 +28,36 @@
       </property>
       <layout class="QGridLayout" name="filterLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="fromDateLabel">
+        <widget class="QLabel" name="fromDateTimeLabel">
          <property name="text">
-          <string>From date</string>
+          <string>From datetime</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QDateEdit" name="fromDateEdit">
+       <item row="0" column="1" colspan="3">
+        <widget class="QDateTimeEdit" name="fromDateTimeEdit">
          <property name="displayFormat">
-          <string>yyyy-MM-dd</string>
+          <string>yyyy-MM-dd HH:mm:ss</string>
          </property>
          <property name="calendarPopup">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="fromTimeLabel">
-         <property name="text">
-          <string>From time</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="3">
-        <widget class="QTimeEdit" name="fromTimeEdit">
-         <property name="displayFormat">
-          <string>HH:mm:ss</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="toDateLabel">
+        <widget class="QLabel" name="toDateTimeLabel">
          <property name="text">
-          <string>To date</string>
+          <string>To datetime</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QDateEdit" name="toDateEdit">
+       <item row="1" column="1" colspan="3">
+        <widget class="QDateTimeEdit" name="toDateTimeEdit">
          <property name="displayFormat">
-          <string>yyyy-MM-dd</string>
+          <string>yyyy-MM-dd HH:mm:ss</string>
          </property>
          <property name="calendarPopup">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="toTimeLabel">
-         <property name="text">
-          <string>To time</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QTimeEdit" name="toTimeEdit">
-         <property name="displayFormat">
-          <string>HH:mm:ss</string>
          </property>
         </widget>
        </item>
