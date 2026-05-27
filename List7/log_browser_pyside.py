@@ -7,7 +7,6 @@ from typing import Optional
 
 from PySide6.QtCore import (
     QAbstractListModel,
-    QFile,
     QDate,
     QDateTime,
     QModelIndex,
@@ -16,7 +15,6 @@ from PySide6.QtCore import (
     QTime,
     Signal,
 )
-from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
     QDateTimeEdit,
@@ -28,8 +26,56 @@ from PySide6.QtWidgets import (
     QPushButton,
 )
 
-from List7.log_data import LogRecord, LogStore, record_display_text
+from List7.log_data import LogRecord, LogStore, record_display_text, stream_log_file
 from List7.main_window import Ui_MainWindow
+
+
+class WorkerSignal(QObject):
+    finished = Signal()
+    chunk_ready = Signal(list)
+    failed = Signal(str)
+
+
+class LogListModel(QAbstractListModel):
+    def __init__(self, store: LogStore) -> None:
+        super().__init__()
+        self.store = store
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        if parent.isValid():
+            return 0
+        return self.store.filtered_count()
+
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Optional[str]:
+        if not index.isValid() or role != Qt.DisplayRole:
+            return None
+
+        row = index.row()
+        if row < 0 or row >= self.store.filtered_count():
+            return None
+
+        return record_display_text(self.store.record_at(row))
+
+    def clear(self) -> None:
+        self.beginResetModel()
+        self.store.clear()
+        self.endResetModel()
+
+    def append_records(self, records: list[LogRecord]) -> None:
+        if not records:
+            return
+
+        start_row = self.store.filtered_count()
+        end_row = start_row + len(records) - 1
+
+        self.beginInsertRows(QModelIndex(), start_row, end_row)
+        self.store.append_records(records)
+        self.endInsertRows()
+
+    def apply_filter(self, start_dt: Optional[datetime], end_dt: Optional[datetime]) -> None:
+        self.beginResetModel()
+        self.store.apply_filter(start_dt, end_dt)
+        self.endResetModel()
 
 
 class LogBrowserController:
@@ -327,7 +373,7 @@ class LogBrowserController:
 #     window.show()
 #     return app.exec()
 
-def run_app(ui_path: Path) -> int:
+def run_app(_ui_path: Path) -> int:
     app = QApplication()
     window = QMainWindow()
     ui = Ui_MainWindow()

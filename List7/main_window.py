@@ -17,8 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QFormLayout, QGridLayout,
     QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-    QListWidget, QListWidgetItem, QMainWindow, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+    QListView, QMainWindow, QPushButton, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
 
         self.contentLayout = QHBoxLayout()
         self.contentLayout.setObjectName(u"contentLayout")
-        self.logList = QListWidget(self.centralwidget)
+        self.logList = QListView(self.centralwidget)
         self.logList.setObjectName(u"logList")
 
         self.contentLayout.addWidget(self.logList)
