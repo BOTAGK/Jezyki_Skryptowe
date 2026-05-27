@@ -81,7 +81,7 @@
     <item>
      <layout class="QHBoxLayout" name="contentLayout">
       <item>
-       <widget class="QListWidget" name="logList"/>
+       <widget class="QListView" name="logList"/>
       </item>
       <item>
        <widget class="QGroupBox" name="detailsGroup">

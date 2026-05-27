@@ -2,31 +2,97 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Event, Thread
 from typing import Optional
 
-from PySide6.QtCore import QFile, QDate, QDateTime, QTime
+from PySide6.QtCore import (
+    QAbstractListModel,
+    QFile,
+    QDate,
+    QDateTime,
+    QModelIndex,
+    QObject,
+    Qt,
+    QTime,
+    Signal,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
     QDateTimeEdit,
     QFileDialog,
     QLineEdit,
-    QListWidget,
-    QListWidgetItem,
+    QListView,
     QMainWindow,
     QMessageBox,
     QPushButton,
 )
 
-from List7.log_data import LogRecord, LogStore, record_display_text
+from List7.log_data import LogRecord, LogStore, record_display_text, stream_log_file
 
+
+class WorkerSignal(QObject):
+    finished = Signal()
+    chunk_ready = Signal(list)
+    failed = Signal(str)
+
+
+class LogListModel(QAbstractListModel):
+    def __init__(self, store: LogStore) -> None:
+        super().__init__()
+        self.store = store
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        if parent.isValid():
+            return 0
+        return self.store.filtered_count()
+
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Optional[str]:
+        if not index.isValid() or role != Qt.DisplayRole:
+            return None
+
+        row = index.row()
+        if row < 0 or row >= self.store.filtered_count():
+            return None
+
+        return record_display_text(self.store.record_at(row))
+
+    def clear(self) -> None:
+        self.beginResetModel()
+        self.store.clear()
+        self.endResetModel()
+
+    def append_records(self, records: list[LogRecord]) -> None:
+        if not records:
+            return
+
+        start_row = self.store.filtered_count()
+        end_row = start_row + len(records) - 1
+
+        self.beginInsertRows(QModelIndex(), start_row, end_row)
+        self.store.append_records(records)
+        self.endInsertRows()
+
+    def apply_filter(self, start_dt: Optional[datetime], end_dt: Optional[datetime]) -> None:
+        self.beginResetModel()
+        self.store.apply_filter(start_dt, end_dt)
+        self.endResetModel()
 
 
 class LogBrowserController:
     def __init__(self, window: QMainWindow) -> None:
         self.window = window
         self.store = LogStore()
+        self.log_model = LogListModel(self.store)
         self.current_index: Optional[int] = None
+        self.is_loading = False
+        self._stop_loading = Event()
+        self._load_worker: Optional[Thread] = None
+
+        self.worker_signals = WorkerSignal()
+        self.worker_signals.finished.connect(self._on_load_finished)
+        self.worker_signals.chunk_ready.connect(self._on_chunk_loaded)
+        self.worker_signals.failed.connect(self._on_load_failed)
 
         self.file_path_line = self._require(QLineEdit, "filePathLine")
         self.open_button = self._require(QPushButton, "openButton")
@@ -35,7 +101,9 @@ class LogBrowserController:
         self.prev_button = self._require(QPushButton, "prevButton")
         self.next_button = self._require(QPushButton, "nextButton")
 
-        self.log_list = self._require(QListWidget, "logList")
+        self.log_list = self._require(QListView, "logList")
+        self.log_list.setModel(self.log_model)
+        self.log_list.setUniformItemSizes(True)
 
         self.from_datetime_edit = self._require(QDateTimeEdit, "fromDateTimeEdit")
         self.to_datetime_edit = self._require(QDateTimeEdit, "toDateTimeEdit")
@@ -71,9 +139,12 @@ class LogBrowserController:
         self.clear_button.clicked.connect(self._on_clear_filter)
         self.prev_button.clicked.connect(self._on_prev)
         self.next_button.clicked.connect(self._on_next)
-        self.log_list.currentRowChanged.connect(self._on_row_changed)
+        self.log_list.selectionModel().currentChanged.connect(self._on_current_changed)
 
     def _on_open(self) -> None:
+        if self.is_loading:
+            return
+
         file_path, _ = QFileDialog.getOpenFileName(
             self.window,
             "Open log file",
@@ -83,15 +154,59 @@ class LogBrowserController:
         if not file_path:
             return
 
-        try:
-            self.store.load(Path(file_path))
-        except OSError as exc:
-            QMessageBox.critical(self.window, "Error", f"Failed to read file: {exc}")
-            return
-
         self.file_path_line.setText(file_path)
+        self._start_loading(Path(file_path))
+
+    def _start_loading(self, file_path: Path, chunk_size: int = 1000) -> None:
+        self.current_index = None
+        self._clear_details()
+        self.log_model.clear()
+        self._set_loading(True)
+        self._stop_loading = Event()
+
+        def worker() -> None:
+            try:
+                chunk: list[LogRecord] = []
+
+                for record in stream_log_file(file_path):
+                    if self._stop_loading.is_set():
+                        break
+
+                    chunk.append(record)
+                    if len(chunk) >= chunk_size:
+                        self.worker_signals.chunk_ready.emit(chunk)
+                        chunk = []
+
+                if chunk and not self._stop_loading.is_set():
+                    self.worker_signals.chunk_ready.emit(chunk)
+            except OSError as exc:
+                self.worker_signals.failed.emit(str(exc))
+            finally:
+                self.worker_signals.finished.emit()
+
+        self._load_worker = Thread(target=worker, daemon=True)
+        self._load_worker.start()
+
+    def _on_chunk_loaded(self, chunk: list[LogRecord]) -> None:
+        should_select_first = self.current_index is None
+        self.log_model.append_records(chunk)
+
+        if should_select_first and self.log_model.rowCount() > 0:
+            self._select_row(0)
+
+        self._update_nav_buttons()
+
+    def _on_load_finished(self) -> None:
+        self._set_loading(False)
+        self._load_worker = None
+
         self._seed_filter_range()
-        self._refresh_list()
+        if self.current_index is None and self.log_model.rowCount() > 0:
+            self._select_row(0)
+        self._update_nav_buttons()
+
+    def _on_load_failed(self, message: str) -> None:
+        QMessageBox.critical(self.window, "Error", f"Failed to read file: {message}")
 
     def _initial_directory(self) -> str:
         log_dir = Path(__file__).resolve().parents[1] / "List2" / "utils"
@@ -109,7 +224,7 @@ class LogBrowserController:
         self.to_datetime_edit.setDateTime(self._to_qdatetime(end_ts))
 
     def _on_apply_filter(self) -> None:
-        if not self.store.records:
+        if self.is_loading or not self.store.records:
             return
 
         start_dt = self._qdatetime_to_py(self.from_datetime_edit.dateTime())
@@ -119,36 +234,27 @@ class LogBrowserController:
             QMessageBox.warning(self.window, "Error", "Start must be before end.")
             return
 
-        self.store.apply_filter(start_dt, end_dt)
-        self._refresh_list()
+        self.log_model.apply_filter(start_dt, end_dt)
+        self._select_first_or_clear()
 
     def _on_clear_filter(self) -> None:
-        if not self.store.records:
+        if self.is_loading or not self.store.records:
             return
 
-        self.store.apply_filter(None, None)
+        self.log_model.apply_filter(None, None)
         self._seed_filter_range()
-        self._refresh_list()
+        self._select_first_or_clear()
 
-    def _refresh_list(self) -> None:
-        self.log_list.clear()
-        for record in self.store.filtered:
-            item = QListWidgetItem(record_display_text(record))
-            self.log_list.addItem(item)
-
-        if self.store.filtered:
-            self.log_list.setCurrentRow(0)
-        else:
+    def _on_current_changed(self, current: QModelIndex, previous: QModelIndex) -> None:
+        row = current.row()
+        if not current.isValid() or row < 0 or row >= self.log_model.rowCount():
             self.current_index = None
             self._clear_details()
             self._update_nav_buttons()
-
-    def _on_row_changed(self, row: int) -> None:
-        if row < 0 or row >= len(self.store.filtered):
             return
 
         self.current_index = row
-        self._update_details(self.store.filtered[row])
+        self._update_details(self.store.record_at(row))
         self._update_nav_buttons()
 
     def _update_details(self, record: LogRecord) -> None:
@@ -174,28 +280,52 @@ class LogBrowserController:
         for field in self.detail_fields.values():
             field.setText("")
 
+    def _select_first_or_clear(self) -> None:
+        if self.log_model.rowCount() > 0:
+            self._select_row(0)
+            return
+
+        self.current_index = None
+        self._clear_details()
+        self._update_nav_buttons()
+
+    def _select_row(self, row: int) -> None:
+        index = self.log_model.index(row, 0)
+        if not index.isValid():
+            return
+
+        self.log_list.setCurrentIndex(index)
+        self.log_list.scrollTo(index)
+
+    def _set_loading(self, is_loading: bool) -> None:
+        self.is_loading = is_loading
+        self.open_button.setEnabled(not is_loading)
+        self.apply_button.setEnabled(not is_loading)
+        self.clear_button.setEnabled(not is_loading)
+
     def _update_nav_buttons(self) -> None:
-        if self.current_index is None or not self.store.filtered:
+        row_count = self.log_model.rowCount()
+        if self.current_index is None or row_count == 0:
             self.prev_button.setEnabled(False)
             self.next_button.setEnabled(False)
             return
 
         self.prev_button.setEnabled(self.current_index > 0)
-        self.next_button.setEnabled(self.current_index < len(self.store.filtered) - 1)
+        self.next_button.setEnabled(self.current_index < row_count - 1)
 
     def _on_prev(self) -> None:
         if self.current_index is None:
             return
         next_index = self.current_index - 1
         if next_index >= 0:
-            self.log_list.setCurrentRow(next_index)
+            self._select_row(next_index)
 
     def _on_next(self) -> None:
         if self.current_index is None:
             return
         next_index = self.current_index + 1
-        if next_index < len(self.store.filtered):
-            self.log_list.setCurrentRow(next_index)
+        if next_index < self.log_model.rowCount():
+            self._select_row(next_index)
 
     def _qdatetime_to_py(self, value: QDateTime) -> Optional[datetime]:
         if not value.isValid():
