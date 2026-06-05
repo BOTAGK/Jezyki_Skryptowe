@@ -21,29 +21,43 @@ class TimeSeries:
         self.values = values
         self.unit = unit
 
-    def __getitem__(self, key: Union[int, slice, date, datetime]):
-        if isinstance(key, int):
-            return self.values[key]
-        elif isinstance(key, slice):
-            return list(zip(self.dates[key], self.values[key]))
-        
-        elif isinstance(key, (date, datetime)):
-            results = []
-            
-            for i, date_obj in enumerate(self.dates):
-                if type(key) in datetime.date:
-                    if date_obj.date() == key:
-                        results.append((date_obj, self.values[i]))
+    def __getitem__(
+            self, key: Union[int, slice, date, datetime]
+        ) -> (
+            tuple[datetime, Optional[float]] 
+            | list[tuple[datetime, Optional[float]]] 
+            | Optional[float]
+            | list[Optional[float]]
+        ):
 
-                elif date_obj.date() == key:
-                    results.append((date_obj, self.values[i]))
+        if isinstance(key, int):
+            return self.dates[key], self.values[key]
+
+        if isinstance(key, slice):
+            return list(zip(self.dates[key], self.values[key]))
+
+        if isinstance(key, datetime):
+            for date_obj, value in zip(self.dates, self.values):
+                if date_obj == key:
+                    return value
+
+            raise KeyError(f"No data found for datetime: {key}")
+
+        if isinstance(key, date):
+            results: list[Optional[float]] = []
+
+            for date_obj, value in zip(self.dates, self.values):
+                if date_obj.date() == key:
+                    results.append(value)
 
             if not results:
                 raise KeyError(f"No data found for date: {key}")
-            
+
             return results[0] if len(results) == 1 else results
 
-        raise TypeError(f"Invalid key type: {type(key)}. Expected int, slice, datetime.date, or datetime.datetime.")  
+        raise TypeError(
+            f"Invalid key type: {type(key)}. Expected int, slice, date, or datetime."
+        )    
 
     def __set_unit__(self, unit: str) -> None:
         if self.unit == "ug/m3" and unit == "ng/m3":
