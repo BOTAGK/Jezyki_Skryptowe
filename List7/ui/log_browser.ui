@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>570</width>
+    <height>638</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Log browser</string>
   </property>
@@ -288,7 +296,7 @@
       <item>
        <spacer name="navSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -313,4 +321,3 @@
  <resources/>
  <connections/>
 </ui>
-
