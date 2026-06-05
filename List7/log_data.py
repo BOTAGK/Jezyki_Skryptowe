@@ -36,6 +36,11 @@ class LogStore:
         self.records: list[LogRecord] = []
         self.filtered_indices: list[int] = []
 
+    def load(self, file_path: Path) -> None:
+        self.clear()
+        records = parse_log_file(file_path)
+        self.append_records(records)    
+
     def clear(self) -> None:
         self.records.clear()
         self.filtered_indices.clear()
@@ -135,3 +140,31 @@ def parse_datetime_input(
     combined = datetime.combine(parsed_date, parsed_time)
     return combined.replace(tzinfo=timezone.utc)
 
+
+def sort_indices_by_datetime(
+    records: list[LogRecord],
+    indices: list[int],
+    descending: bool = False,
+) -> list[int]:
+    
+    if not indices:
+        return []
+
+  
+    def get_timestamp(index: int) -> datetime:
+        return records[index].entry.ts
+
+ 
+    sorted_indices = sorted(indices, key=get_timestamp, reverse=descending)
+    
+    return sorted_indices
+
+def filter_errors_only(self) -> None:
+        """Filtruje logi, zostawiając tylko te z kodami od 400 do 599."""
+        filtered: list[int] = []
+        for index, record in enumerate(self.records):
+            status = record.entry.status_code
+            if status is not None and 400 <= status <= 599:
+                filtered.append(index)
+        
+        self.filtered_indices = filtered
