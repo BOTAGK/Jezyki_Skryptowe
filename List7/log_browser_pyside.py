@@ -154,7 +154,17 @@ class LogBrowserController:
             return
 
         self.file_path_line.setText(file_path)
+        # new version with background loading
         self._start_loading(Path(file_path))
+        # old version of loading whole file at once - not recommended for large files
+        # self.log_model.beginResetModel()
+        
+        # self.store.load(Path(file_path))
+        
+        # self.log_model.endResetModel()
+
+        # self._seed_filter_range()
+        # self._select_first_or_clear()
 
     def _start_loading(self, file_path: Path, chunk_size: int = 1000) -> None:
         self.current_index = None
