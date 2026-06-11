@@ -1,4 +1,4 @@
-from station import Station, StationColumn
+from List8.station import Station, StationColumn
 
 def make_station(code: str) -> Station:
     return Station({

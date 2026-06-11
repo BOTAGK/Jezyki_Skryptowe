@@ -3,9 +3,9 @@ from typing import Any, List
 
 import pytest
 
-from series_validator import OutlierDetector, ThresholdDetector, ZeroSpikeDetector
-from simple_reporter import SimpleReporter
-from time_series import TimeSeries
+from List8.series_validator import OutlierDetector, ThresholdDetector, ZeroSpikeDetector
+from List8.simple_reporter import SimpleReporter
+from List8.time_series import TimeSeries
 
 
 def test_outlier_detector_finds_value_more_than_k_stddev_from_mean(

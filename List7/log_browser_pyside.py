@@ -13,8 +13,9 @@ from PySide6.QtCore import (
     QObject,
     Qt,
     QTime,
-    Signal,
+    Signal, QFile,
 )
+from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -24,7 +25,7 @@ from PySide6.QtWidgets import (
     QListView,
     QMainWindow,
     QMessageBox,
-    QPushButton,
+    QPushButton, QComboBox,
 )
 
 from List7.log_data import (
@@ -33,11 +34,12 @@ from List7.log_data import (
     LogStore,
     date_range_filter,
     errors_only_filter,
+    no_error_only_filter,
     record_display_text,
     stream_log_file,
 )
 
-from List7.main_window import Ui_MainWindow
+from List7.main_window_mod import Ui_MainWindow
 
 
 class WorkerSignal(QObject):
@@ -90,7 +92,7 @@ class LogListModel(QAbstractListModel):
     def sort_by_datetime(self, descending: bool = False) -> None:
         self.beginResetModel()
         self.store.sort_filtered_by_datetime(descending)
-        self.endResetModel()    
+        self.endResetModel()
 
 class LogBrowserController:
     def __init__(self, window: QMainWindow) -> None:
@@ -121,7 +123,7 @@ class LogBrowserController:
         self.from_datetime_edit = self._require(QDateTimeEdit, "fromDateTimeEdit")
         self.to_datetime_edit = self._require(QDateTimeEdit, "toDateTimeEdit")
 
-        self.errors_only_checkbox = self._require(QCheckBox, "errorsOnlyCheckbox")
+        self.error_filter_combobox = self._require(QComboBox, "errorFilterComboBox")
 
         self.detail_fields = {
             "uid": self._require(QLineEdit, "uidEdit"),
@@ -156,7 +158,7 @@ class LogBrowserController:
         self.next_button.clicked.connect(self._on_next)
         self.log_list.selectionModel().currentChanged.connect(self._on_current_changed)
 
-        # self.errors_only_checkbox.stateChanged.connect(self._refresh_filters)
+        # self.error_filter_combobox.stateChanged.connect(self._refresh_filters)
 
     def _on_open(self) -> None:
         if self.is_loading:
@@ -258,8 +260,11 @@ class LogBrowserController:
             date_range_filter(start_dt, end_dt),
         ]
 
-        if self.errors_only_checkbox.isChecked():
-            filters.append(errors_only_filter())
+        if self.error_filter_combobox.isEnabled():
+            if self.error_filter_combobox.currentIndex() == 0:
+                filters.append(errors_only_filter())
+            else:
+                filters.append(no_error_only_filter())
 
         return filters
 
@@ -288,7 +293,7 @@ class LogBrowserController:
         if self.is_loading or not self.store.records:
             return
 
-        #self.errors_only_checkbox.setChecked(False)
+        #self.error_filter_combobox.setChecked(False)
         self.log_model.apply_filters([])
         self._seed_filter_range()
         self._select_first_or_clear()
@@ -413,8 +418,8 @@ class LogBrowserController:
 #         raise RuntimeError("Blad: Nie udało się wczytać pliku UI")
 #
 #     return window
-
-
+#
+#
 # def run_app(ui_path: Path) -> int:
 #     app = QApplication()
 #     window = load_ui(ui_path)

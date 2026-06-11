@@ -212,6 +212,9 @@ def status_class_filter(status_class: int) -> LogFilter:
 def errors_only_filter() -> LogFilter:
     return status_code_range_filter(400, 599)
 
+def no_error_only_filter() -> LogFilter:
+    return status_code_range_filter(200, 399)
+
 
 def status_text_filter(status_text: str, case_sensitive: bool = False) -> LogFilter:
     def matches(record: LogRecord) -> bool:

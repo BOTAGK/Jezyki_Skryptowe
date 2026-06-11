@@ -35,27 +35,49 @@
        <string>Filter</string>
       </property>
       <layout class="QGridLayout" name="filterLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="fromDateTimeLabel">
-         <property name="text">
-          <string>From datetime</string>
+       <item row="0" column="6">
+        <widget class="QComboBox" name="errorFilterComboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-        </widget>
-       </item>
-       <item row="0" column="1" colspan="3">
-        <widget class="QDateTimeEdit" name="fromDateTimeEdit">
-         <property name="displayFormat">
-          <string>yyyy-MM-dd HH:mm:ss</string>
+         <property name="acceptDrops">
+          <bool>false</bool>
          </property>
-         <property name="calendarPopup">
-          <bool>true</bool>
+         <property name="editable">
+          <bool>false</bool>
          </property>
+         <property name="currentText">
+          <string>ERROR</string>
+         </property>
+         <property name="placeholderText">
+          <string/>
+         </property>
+         <item>
+          <property name="text">
+           <string>ERROR</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>NO ERROR</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="toDateTimeLabel">
          <property name="text">
           <string>To datetime</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="fromDateTimeLabel">
+         <property name="text">
+          <string>From datetime</string>
          </property>
         </widget>
        </item>
@@ -69,14 +91,24 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="4" rowspan="2">
+       <item row="0" column="1" colspan="3">
+        <widget class="QDateTimeEdit" name="fromDateTimeEdit">
+         <property name="displayFormat">
+          <string>yyyy-MM-dd HH:mm:ss</string>
+         </property>
+         <property name="calendarPopup">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="8">
         <widget class="QPushButton" name="applyButton">
          <property name="text">
           <string>Apply</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5" rowspan="2">
+       <item row="1" column="8">
         <widget class="QPushButton" name="clearButton">
          <property name="text">
           <string>Clear</string>

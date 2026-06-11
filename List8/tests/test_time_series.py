@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 
 import pytest
 from datetime import datetime, date
-from time_series import TimeSeries
+from List8.time_series import TimeSeries
 
 def test_getitem_with_int(example_series: TimeSeries) -> None:
     date_obj: datetime

@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List
 
-from simple_reporter import SimpleReporter
-from time_series import TimeSeries
+from List8.simple_reporter import SimpleReporter
+from List8.time_series import TimeSeries
 
 
 def test_simple_reporter_returns_info_message_for_time_series() -> None:
