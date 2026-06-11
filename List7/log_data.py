@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, time, timezone
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Callable, Iterator, Optional
 
 from List2.readLog import parse_log_line
 from List2.strucutres import LogEntry
@@ -13,6 +13,232 @@ from List2.strucutres import LogEntry
 class LogRecord:
     entry: LogEntry
     raw: str
+
+
+LogFilter = Callable[[LogRecord], bool]
+
+
+def apply_log_filters(
+    records: list[LogRecord],
+    filters: list[LogFilter],
+) -> list[int]:
+    filtered: list[int] = []
+
+    for index, record in enumerate(records):
+        if all(log_filter(record) for log_filter in filters):
+            filtered.append(index)
+
+    return filtered
+
+
+def _text_equals(value: Optional[str], expected: str, case_sensitive: bool = True) -> bool:
+    if value is None:
+        return False
+    if case_sensitive:
+        return value == expected
+    return value.casefold() == expected.casefold()
+
+
+def _text_contains(value: Optional[str], text: str, case_sensitive: bool = False) -> bool:
+    if value is None:
+        return False
+    if case_sensitive:
+        return text in value
+    return text.casefold() in value.casefold()
+
+
+def _number_in_range(value: int, min_value: Optional[int], max_value: Optional[int]) -> bool:
+    if min_value is not None and value < min_value:
+        return False
+    if max_value is not None and value > max_value:
+        return False
+    return True
+
+
+def timestamp_filter(timestamp: datetime) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return record.entry.ts == timestamp
+
+    return matches
+
+
+def date_range_filter(
+    start_dt: Optional[datetime],
+    end_dt: Optional[datetime],
+) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        ts = record.entry.ts
+        if start_dt is not None and ts < start_dt:
+            return False
+        if end_dt is not None and ts > end_dt:
+            return False
+        return True
+
+    return matches
+
+
+def uid_filter(uid: str, case_sensitive: bool = True) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.uid, uid, case_sensitive)
+
+    return matches
+
+
+def uid_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.uid, text, case_sensitive)
+
+    return matches
+
+
+def orig_host_filter(host: str, case_sensitive: bool = True) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.id_orig_h, host, case_sensitive)
+
+    return matches
+
+
+def orig_host_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.id_orig_h, text, case_sensitive)
+
+    return matches
+
+
+def orig_port_filter(port: int) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return record.entry.id_orig_p == port
+
+    return matches
+
+
+def orig_port_range_filter(min_port: Optional[int], max_port: Optional[int]) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _number_in_range(record.entry.id_orig_p, min_port, max_port)
+
+    return matches
+
+
+def resp_host_filter(host: str, case_sensitive: bool = True) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.id_resp_h, host, case_sensitive)
+
+    return matches
+
+
+def resp_host_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.id_resp_h, text, case_sensitive)
+
+    return matches
+
+
+def resp_port_filter(port: int) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return record.entry.id_resp_p == port
+
+    return matches
+
+
+def resp_port_range_filter(min_port: Optional[int], max_port: Optional[int]) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _number_in_range(record.entry.id_resp_p, min_port, max_port)
+
+    return matches
+
+
+def method_filter(method: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.method, method, case_sensitive)
+
+    return matches
+
+
+def host_filter(host: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.host, host, case_sensitive)
+
+    return matches
+
+
+def host_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.host, text, case_sensitive)
+
+    return matches
+
+
+def uri_filter(uri: str, case_sensitive: bool = True) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.uri, uri, case_sensitive)
+
+    return matches
+
+
+def uri_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.uri, text, case_sensitive)
+
+    return matches
+
+
+def status_code_filter(status_code: int) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        status = record.entry.status_code
+        return status == status_code
+
+    return matches
+
+
+def status_code_range_filter(min_code: Optional[int], max_code: Optional[int]) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        status = record.entry.status_code
+        return status is not None and _number_in_range(status, min_code, max_code)
+
+    return matches
+
+
+def status_class_filter(status_class: int) -> LogFilter:
+    if status_class < 1 or status_class > 5:
+        raise ValueError("Status class must be between 1 and 5.")
+
+    def matches(record: LogRecord) -> bool:
+        status = record.entry.status_code
+        return status is not None and status // 100 == status_class
+
+    return matches
+
+
+def errors_only_filter() -> LogFilter:
+    return status_code_range_filter(400, 599)
+
+
+def status_text_filter(status_text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_equals(record.entry.status_text, status_text, case_sensitive)
+
+    return matches
+
+
+def status_text_contains_filter(text: str, case_sensitive: bool = False) -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return _text_contains(record.entry.status_text, text, case_sensitive)
+
+    return matches
+
+
+def missing_status_code_filter() -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return record.entry.status_code is None
+
+    return matches
+
+
+def missing_status_text_filter() -> LogFilter:
+    def matches(record: LogRecord) -> bool:
+        return record.entry.status_text is None
+
+    return matches
 
 
 def stream_log_file(file_path: Path, max_lines: Optional[int] = None) -> Iterator[LogRecord]:
@@ -36,10 +262,10 @@ class LogStore:
         self.records: list[LogRecord] = []
         self.filtered_indices: list[int] = []
 
-    def load(self, file_path: Path) -> None:
-        self.clear()
-        records = parse_log_file(file_path)
-        self.append_records(records)    
+    # def load(self, file_path: Path) -> None:
+    #     self.clear()
+    #     records = parse_log_file(file_path)
+    #     self.append_records(records)    
 
     def clear(self) -> None:
         self.records.clear()
@@ -56,25 +282,32 @@ class LogStore:
     def record_at(self, row: int) -> LogRecord:
         return self.records[self.filtered_indices[row]]
 
-    def apply_filter(self, start_dt: Optional[datetime], end_dt: Optional[datetime]) -> None:
-        self.filtered_indices = filter_indices_by_datetime(self.records, start_dt, end_dt)
+    def apply_filters(self, filters: list[LogFilter]) -> None:
+        self.filtered_indices = apply_log_filters(self.records, filters)
+
+    def sort_filtered_by_datetime(self, descending: bool = False) -> None:
+        self.filtered_indices = sort_indices_by_datetime(
+            self.records,
+            self.filtered_indices,
+            descending,
+        )  
 
 
-def parse_log_file(file_path: Path, max_lines: Optional[int] = None) -> list[LogRecord]:
-    records: list[LogRecord] = []
+# def parse_log_file(file_path: Path, max_lines: Optional[int] = None) -> list[LogRecord]:
+#     records: list[LogRecord] = []
 
-    with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
-        for line in file:
-            entry = parse_log_line(line)
-            if entry is None:
-                continue
+#     with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
+#         for line in file:
+#             entry = parse_log_line(line)
+#             if entry is None:
+#                 continue
 
-            records.append(LogRecord(entry=entry, raw=line.rstrip("\n")))
+#             records.append(LogRecord(entry=entry, raw=line.rstrip("\n")))
 
-            if max_lines is not None and len(records) >= max_lines:
-                break
+#             if max_lines is not None and len(records) >= max_lines:
+#                 break
 
-    return records
+#     return records
 
 
 def truncate_text(text: str, max_len: int = 30) -> str:
@@ -90,34 +323,6 @@ def record_display_text(record: LogRecord, max_len: int = 30) -> str:
     uri = truncate_text(entry.uri, max_len)
     timestamp = entry.ts.strftime("%d/%b/%Y:%H:%M:%S")
     return f'{entry.id_orig_h} - [{timestamp}] "{entry.method} {uri}"'
-
-
-def filter_by_datetime(
-    records: list[LogRecord],
-    start_dt: Optional[datetime],
-    end_dt: Optional[datetime],
-) -> list[LogRecord]:
-    return [records[index] for index in filter_indices_by_datetime(records, start_dt, end_dt)]
-
-
-def filter_indices_by_datetime(
-    records: list[LogRecord],
-    start_dt: Optional[datetime],
-    end_dt: Optional[datetime],
-) -> list[int]:
-    if start_dt is None and end_dt is None:
-        return list(range(len(records)))
-
-    filtered: list[int] = []
-    for index, record in enumerate(records):
-        ts = record.entry.ts
-        if start_dt is not None and ts < start_dt:
-            continue
-        if end_dt is not None and ts > end_dt:
-            continue
-        filtered.append(index)
-
-    return filtered
 
 
 def parse_datetime_input(
@@ -146,25 +351,13 @@ def sort_indices_by_datetime(
     indices: list[int],
     descending: bool = False,
 ) -> list[int]:
-    
     if not indices:
         return []
 
-  
     def get_timestamp(index: int) -> datetime:
         return records[index].entry.ts
 
- 
     sorted_indices = sorted(indices, key=get_timestamp, reverse=descending)
-    
+
     return sorted_indices
 
-def filter_errors_only(self) -> None:
-        """Filtruje logi, zostawiając tylko te z kodami od 400 do 599."""
-        filtered: list[int] = []
-        for index, record in enumerate(self.records):
-            status = record.entry.status_code
-            if status is not None and 400 <= status <= 599:
-                filtered.append(index)
-        
-        self.filtered_indices = filtered

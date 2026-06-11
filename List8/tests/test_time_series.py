@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import pytest
 from datetime import datetime, date
@@ -18,6 +18,35 @@ def test_getitem_with_slice(example_series: TimeSeries) -> None:
     assert len(result) == 2
     assert result[0] == (datetime(2026, 5, 2, 0, 0), 0.0)
     assert result[1] == (datetime(2026, 5, 3, 0, 0), 0.0)
+
+def test_getitem_with_out_of_range_slice_returns_empty_list(
+    example_series: TimeSeries,
+) -> None:
+    result: List[tuple[datetime, Optional[float]]] = example_series[100:200]
+
+    assert result == []
+
+def test_getitem_with_invalid_slice_bounds_raises_type_error(
+    example_series: TimeSeries,
+) -> None:
+    invalid_slice: Any = slice("start", "stop")
+
+    with pytest.raises(TypeError):
+        _ = example_series[invalid_slice]
+
+def test_getitem_with_invalid_key_type_raises_type_error(
+    example_series: TimeSeries,
+) -> None:
+    invalid_key: Any = "bad"
+
+    with pytest.raises(TypeError, match="Invalid key type"):
+        _ = example_series[invalid_key]
+
+def test_getitem_with_out_of_range_int_raises_index_error(
+    example_series: TimeSeries,
+) -> None:
+    with pytest.raises(IndexError):
+        _ = example_series[999]
 
 def test_getitem_with_date(example_series: TimeSeries) -> None:
     value: Optional[float] = example_series[date(2026, 5, 5)]  

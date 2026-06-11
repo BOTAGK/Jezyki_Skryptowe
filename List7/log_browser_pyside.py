@@ -17,6 +17,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QDateTimeEdit,
     QFileDialog,
     QLineEdit,
@@ -26,7 +27,16 @@ from PySide6.QtWidgets import (
     QPushButton,
 )
 
-from List7.log_data import LogRecord, LogStore, record_display_text, stream_log_file
+from List7.log_data import (
+    LogFilter,
+    LogRecord,
+    LogStore,
+    date_range_filter,
+    errors_only_filter,
+    record_display_text,
+    stream_log_file,
+)
+
 from List7.main_window import Ui_MainWindow
 
 
@@ -59,7 +69,7 @@ class LogListModel(QAbstractListModel):
     def clear(self) -> None:
         self.beginResetModel()
         self.store.clear()
-        self.endResetModel()
+        self.endResetModel()    
 
     def append_records(self, records: list[LogRecord]) -> None:
         if not records:
@@ -72,11 +82,15 @@ class LogListModel(QAbstractListModel):
         self.store.append_records(records)
         self.endInsertRows()
 
-    def apply_filter(self, start_dt: Optional[datetime], end_dt: Optional[datetime]) -> None:
+    def apply_filters(self, filters: list[LogFilter]) -> None:
         self.beginResetModel()
-        self.store.apply_filter(start_dt, end_dt)
+        self.store.apply_filters(filters)
         self.endResetModel()
 
+    def sort_by_datetime(self, descending: bool = False) -> None:
+        self.beginResetModel()
+        self.store.sort_filtered_by_datetime(descending)
+        self.endResetModel()    
 
 class LogBrowserController:
     def __init__(self, window: QMainWindow) -> None:
@@ -106,6 +120,8 @@ class LogBrowserController:
 
         self.from_datetime_edit = self._require(QDateTimeEdit, "fromDateTimeEdit")
         self.to_datetime_edit = self._require(QDateTimeEdit, "toDateTimeEdit")
+
+        self.errors_only_checkbox = self._require(QCheckBox, "errorsOnlyCheckbox")
 
         self.detail_fields = {
             "uid": self._require(QLineEdit, "uidEdit"),
@@ -139,6 +155,8 @@ class LogBrowserController:
         self.prev_button.clicked.connect(self._on_prev)
         self.next_button.clicked.connect(self._on_next)
         self.log_list.selectionModel().currentChanged.connect(self._on_current_changed)
+
+        # self.errors_only_checkbox.stateChanged.connect(self._refresh_filters)
 
     def _on_open(self) -> None:
         if self.is_loading:
@@ -232,6 +250,26 @@ class LogBrowserController:
         self.from_datetime_edit.setDateTime(self._to_qdatetime(start_ts))
         self.to_datetime_edit.setDateTime(self._to_qdatetime(end_ts))
 
+    def _build_active_filters(self) -> list[LogFilter]:
+        start_dt = self._qdatetime_to_py(self.from_datetime_edit.dateTime())
+        end_dt = self._qdatetime_to_py(self.to_datetime_edit.dateTime())
+
+        filters: list[LogFilter] = [
+            date_range_filter(start_dt, end_dt),
+        ]
+
+        if self.errors_only_checkbox.isChecked():
+            filters.append(errors_only_filter())
+
+        return filters
+
+    def _refresh_filters(self, *args) -> None:
+        if self.is_loading or not self.store.records:
+            return
+
+        self.log_model.apply_filters(self._build_active_filters())
+        self._select_first_or_clear()
+
     def _on_apply_filter(self) -> None:
         if self.is_loading or not self.store.records:
             return
@@ -243,14 +281,15 @@ class LogBrowserController:
             QMessageBox.warning(self.window, "Error", "Start must be before end.")
             return
 
-        self.log_model.apply_filter(start_dt, end_dt)
+        self.log_model.apply_filters(self._build_active_filters())
         self._select_first_or_clear()
 
     def _on_clear_filter(self) -> None:
         if self.is_loading or not self.store.records:
             return
 
-        self.log_model.apply_filter(None, None)
+        #self.errors_only_checkbox.setChecked(False)
+        self.log_model.apply_filters([])
         self._seed_filter_range()
         self._select_first_or_clear()
 
