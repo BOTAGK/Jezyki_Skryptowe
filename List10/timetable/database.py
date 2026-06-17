@@ -8,8 +8,9 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from timetable.constants import DatabaseSetting, SqliteOption
 
-SQLITE_SUFFIX = ".sqlite3"
+SQLITE_SUFFIX = DatabaseSetting.SQLITE_SUFFIX.value
 
 
 def normalize_database_path(database: str | Path) -> Path:
@@ -23,16 +24,16 @@ def create_sqlite_engine(database: str | Path, echo: bool = False) -> Engine:
     database_path = normalize_database_path(database)
     database_path.parent.mkdir(parents=True, exist_ok=True)
     engine = create_engine(
-        f"sqlite:///{database_path.as_posix()}",
-        connect_args={"check_same_thread": False},
+        f"{DatabaseSetting.SQLITE_URL_PREFIX.value}{database_path.as_posix()}",
+        connect_args={SqliteOption.CHECK_SAME_THREAD.value: False},
         echo=echo,
         future=True,
     )
 
-    @event.listens_for(engine, "connect")
+    @event.listens_for(engine, SqliteOption.CONNECT_EVENT.value)
     def enable_foreign_keys(dbapi_connection, _connection_record) -> None:
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute(SqliteOption.FOREIGN_KEYS_ON.value)
         cursor.close()
 
     return engine

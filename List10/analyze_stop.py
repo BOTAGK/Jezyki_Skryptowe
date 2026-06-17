@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 
+from timetable.constants import CliArgument
 from timetable.schemas.analytics import StopAnalytics, StopOption
 from timetable.services.analytics_service import AnalyticsService
 from timetable.services.database_service import DatabaseService
@@ -10,12 +11,23 @@ from timetable.services.database_service import DatabaseService
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze departures for one stop.")
     parser.add_argument(
-        "database",
+        CliArgument.DATABASE.value,
         help="Database name or path. Missing .sqlite3 suffix is added automatically.",
     )
-    parser.add_argument("--stop-id", help="Skip prompt and analyze this stop id.")
-    parser.add_argument("--search", help="Initial stop-name filter for the prompt.")
-    parser.add_argument("--limit", type=int, default=50, help="Stop list size.")
+    parser.add_argument(
+        CliArgument.STOP_ID.value,
+        help="Skip prompt and analyze this stop id.",
+    )
+    parser.add_argument(
+        CliArgument.SEARCH.value,
+        help="Initial stop-name filter for the prompt.",
+    )
+    parser.add_argument(
+        CliArgument.LIMIT.value,
+        type=int,
+        default=50,
+        help="Stop list size.",
+    )
     return parser.parse_args()
 
 

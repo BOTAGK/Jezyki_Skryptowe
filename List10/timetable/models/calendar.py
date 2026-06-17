@@ -5,11 +5,12 @@ from datetime import date
 from sqlalchemy import Boolean, Date, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from timetable.constants import RelationshipName, TableName
 from timetable.models.base import Base
 
 
 class ServiceCalendar(Base):
-    __tablename__ = "service_calendar"
+    __tablename__ = TableName.SERVICE_CALENDAR.value
 
     service_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     monday: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -22,4 +23,6 @@ class ServiceCalendar(Base):
     start_date: Mapped[date | None] = mapped_column(Date)
     end_date: Mapped[date | None] = mapped_column(Date)
 
-    trips: Mapped[list["Trip"]] = relationship(back_populates="calendar")
+    trips: Mapped[list["Trip"]] = relationship(
+        back_populates=RelationshipName.CALENDAR.value
+    )

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from timetable.constants import TableName
+
 
 @dataclass(slots=True)
 class ImportSummary:
@@ -13,9 +15,9 @@ class ImportSummary:
 
     def as_lines(self) -> list[str]:
         return [
-            f"stops: {self.stops}",
-            f"routes: {self.routes}",
-            f"service_calendar: {self.service_calendar}",
-            f"trips: {self.trips}",
-            f"stop_times: {self.stop_times}",
+            f"{TableName.STOPS.value}: {self.stops}",
+            f"{TableName.ROUTES.value}: {self.routes}",
+            f"{TableName.SERVICE_CALENDAR.value}: {self.service_calendar}",
+            f"{TableName.TRIPS.value}: {self.trips}",
+            f"{TableName.STOP_TIMES.value}: {self.stop_times}",
         ]

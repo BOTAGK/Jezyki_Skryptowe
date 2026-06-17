@@ -10,6 +10,13 @@ from typing import Any
 from sqlalchemy import delete, insert
 from sqlalchemy.orm import Session
 
+from timetable.constants import (
+    DatabaseColumn,
+    GtfsColumn,
+    GtfsFile,
+    GtfsValue,
+    TextEncoding,
+)
 from timetable.models import Route, ServiceCalendar, Stop, StopTime, Trip
 from timetable.schemas.gtfs import ImportSummary
 from timetable.utils.time import parse_gtfs_date, parse_gtfs_time_to_seconds
@@ -19,13 +26,7 @@ RowMapper = Callable[[dict[str, str]], dict[str, Any]]
 
 
 class GtfsLoader:
-    required_files = {
-        "stops.txt",
-        "routes.txt",
-        "calendar.txt",
-        "trips.txt",
-        "stop_times.txt",
-    }
+    required_files: set[GtfsFile] = set(GtfsFile)
 
     def __init__(self, session: Session, batch_size: int = 5000) -> None:
         if batch_size <= 0:
@@ -40,7 +41,7 @@ class GtfsLoader:
 
         with zipfile.ZipFile(zip_path) as archive:
             members = self._find_members(archive)
-            missing = sorted(self.required_files - set(members))
+            missing = sorted(file.value for file in self.required_files - set(members))
             if missing:
                 raise ValueError(f"Missing GTFS files: {', '.join(missing)}")
 
@@ -49,34 +50,37 @@ class GtfsLoader:
 
             summary = ImportSummary()
             summary.stops = self._load_table(
-                archive, members["stops.txt"], Stop, self._map_stop
+                archive, members[GtfsFile.STOPS], Stop, self._map_stop
             )
             summary.routes = self._load_table(
-                archive, members["routes.txt"], Route, self._map_route
+                archive, members[GtfsFile.ROUTES], Route, self._map_route
             )
             summary.service_calendar = self._load_table(
                 archive,
-                members["calendar.txt"],
+                members[GtfsFile.CALENDAR],
                 ServiceCalendar,
                 self._map_calendar,
             )
             summary.trips = self._load_table(
-                archive, members["trips.txt"], Trip, self._map_trip
+                archive, members[GtfsFile.TRIPS], Trip, self._map_trip
             )
             summary.stop_times = self._load_table(
                 archive,
-                members["stop_times.txt"],
+                members[GtfsFile.STOP_TIMES],
                 StopTime,
                 self._map_stop_time,
             )
             return summary
 
-    def _find_members(self, archive: zipfile.ZipFile) -> dict[str, str]:
-        members: dict[str, str] = {}
+    def _find_members(self, archive: zipfile.ZipFile) -> dict[GtfsFile, str]:
+        members: dict[GtfsFile, str] = {}
         for name in archive.namelist():
             basename = Path(name).name.lower()
-            if basename in self.required_files:
-                members[basename] = name
+            try:
+                gtfs_file = GtfsFile(basename)
+            except ValueError:
+                continue
+            members[gtfs_file] = name
         return members
 
     def _clear_existing_data(self) -> None:
@@ -115,65 +119,88 @@ class GtfsLoader:
 
     def _iter_rows(self, archive: zipfile.ZipFile, member: str) -> Iterator[dict[str, str]]:
         with archive.open(member) as raw:
-            wrapper = io.TextIOWrapper(raw, encoding="utf-8-sig", newline="")
+            wrapper = io.TextIOWrapper(
+                raw,
+                encoding=TextEncoding.UTF_8_SIG.value,
+                newline="",
+            )
             reader = csv.DictReader(wrapper)
             for row in reader:
                 yield {key.strip(): value for key, value in row.items() if key is not None}
 
     def _map_stop(self, row: dict[str, str]) -> dict[str, Any]:
         return {
-            "stop_id": clean(row.get("stop_id")),
-            "stop_code": clean(row.get("stop_code")),
-            "stop_name": clean(row.get("stop_name")) or "",
-            "stop_lat": parse_float(row.get("stop_lat")),
-            "stop_lon": parse_float(row.get("stop_lon")),
+            DatabaseColumn.STOP_ID.value: clean(gtfs_field(row, GtfsColumn.STOP_ID)),
+            DatabaseColumn.STOP_CODE.value: clean(gtfs_field(row, GtfsColumn.STOP_CODE)),
+            DatabaseColumn.STOP_NAME.value: clean(gtfs_field(row, GtfsColumn.STOP_NAME)) or "",
+            DatabaseColumn.STOP_LAT.value: parse_float(gtfs_field(row, GtfsColumn.STOP_LAT)),
+            DatabaseColumn.STOP_LON.value: parse_float(gtfs_field(row, GtfsColumn.STOP_LON)),
         }
 
     def _map_route(self, row: dict[str, str]) -> dict[str, Any]:
         return {
-            "route_id": clean(row.get("route_id")),
-            "agency_id": clean(row.get("agency_id")),
-            "route_short_name": clean(row.get("route_short_name")),
-            "route_long_name": clean(row.get("route_long_name")),
-            "route_desc": clean(row.get("route_desc")),
-            "route_type": parse_int(row.get("route_type")),
+            DatabaseColumn.ROUTE_ID.value: clean(gtfs_field(row, GtfsColumn.ROUTE_ID)),
+            DatabaseColumn.AGENCY_ID.value: clean(gtfs_field(row, GtfsColumn.AGENCY_ID)),
+            DatabaseColumn.ROUTE_SHORT_NAME.value: clean(
+                gtfs_field(row, GtfsColumn.ROUTE_SHORT_NAME)
+            ),
+            DatabaseColumn.ROUTE_LONG_NAME.value: clean(
+                gtfs_field(row, GtfsColumn.ROUTE_LONG_NAME)
+            ),
+            DatabaseColumn.ROUTE_DESC.value: clean(gtfs_field(row, GtfsColumn.ROUTE_DESC)),
+            DatabaseColumn.ROUTE_TYPE.value: parse_int(gtfs_field(row, GtfsColumn.ROUTE_TYPE)),
         }
 
     def _map_calendar(self, row: dict[str, str]) -> dict[str, Any]:
         return {
-            "service_id": clean(row.get("service_id")),
-            "monday": parse_bool(row.get("monday")),
-            "tuesday": parse_bool(row.get("tuesday")),
-            "wednesday": parse_bool(row.get("wednesday")),
-            "thursday": parse_bool(row.get("thursday")),
-            "friday": parse_bool(row.get("friday")),
-            "saturday": parse_bool(row.get("saturday")),
-            "sunday": parse_bool(row.get("sunday")),
-            "start_date": parse_gtfs_date(row.get("start_date")),
-            "end_date": parse_gtfs_date(row.get("end_date")),
+            DatabaseColumn.SERVICE_ID.value: clean(gtfs_field(row, GtfsColumn.SERVICE_ID)),
+            DatabaseColumn.MONDAY.value: parse_bool(gtfs_field(row, GtfsColumn.MONDAY)),
+            DatabaseColumn.TUESDAY.value: parse_bool(gtfs_field(row, GtfsColumn.TUESDAY)),
+            DatabaseColumn.WEDNESDAY.value: parse_bool(gtfs_field(row, GtfsColumn.WEDNESDAY)),
+            DatabaseColumn.THURSDAY.value: parse_bool(gtfs_field(row, GtfsColumn.THURSDAY)),
+            DatabaseColumn.FRIDAY.value: parse_bool(gtfs_field(row, GtfsColumn.FRIDAY)),
+            DatabaseColumn.SATURDAY.value: parse_bool(gtfs_field(row, GtfsColumn.SATURDAY)),
+            DatabaseColumn.SUNDAY.value: parse_bool(gtfs_field(row, GtfsColumn.SUNDAY)),
+            DatabaseColumn.START_DATE.value: parse_gtfs_date(
+                gtfs_field(row, GtfsColumn.START_DATE)
+            ),
+            DatabaseColumn.END_DATE.value: parse_gtfs_date(
+                gtfs_field(row, GtfsColumn.END_DATE)
+            ),
         }
 
     def _map_trip(self, row: dict[str, str]) -> dict[str, Any]:
         return {
-            "route_id": clean(row.get("route_id")),
-            "service_id": clean(row.get("service_id")),
-            "trip_id": clean(row.get("trip_id")),
-            "trip_headsign": clean(row.get("trip_headsign")),
-            "direction_id": parse_int(row.get("direction_id")),
+            DatabaseColumn.ROUTE_ID.value: clean(gtfs_field(row, GtfsColumn.ROUTE_ID)),
+            DatabaseColumn.SERVICE_ID.value: clean(gtfs_field(row, GtfsColumn.SERVICE_ID)),
+            DatabaseColumn.TRIP_ID.value: clean(gtfs_field(row, GtfsColumn.TRIP_ID)),
+            DatabaseColumn.TRIP_HEADSIGN.value: clean(
+                gtfs_field(row, GtfsColumn.TRIP_HEADSIGN)
+            ),
+            DatabaseColumn.DIRECTION_ID.value: parse_int(
+                gtfs_field(row, GtfsColumn.DIRECTION_ID)
+            ),
         }
 
     def _map_stop_time(self, row: dict[str, str]) -> dict[str, Any]:
-        arrival_time = clean(row.get("arrival_time"))
-        departure_time = clean(row.get("departure_time"))
+        arrival_time = clean(gtfs_field(row, GtfsColumn.ARRIVAL_TIME))
+        departure_time = clean(gtfs_field(row, GtfsColumn.DEPARTURE_TIME))
         return {
-            "trip_id": clean(row.get("trip_id")),
-            "arrival_time": arrival_time,
-            "departure_time": departure_time,
-            "arrival_seconds": parse_gtfs_time_to_seconds(arrival_time),
-            "departure_seconds": parse_gtfs_time_to_seconds(departure_time),
-            "stop_id": clean(row.get("stop_id")),
-            "stop_sequence": parse_int(row.get("stop_sequence")) or 0,
+            DatabaseColumn.TRIP_ID.value: clean(gtfs_field(row, GtfsColumn.TRIP_ID)),
+            DatabaseColumn.ARRIVAL_TIME.value: arrival_time,
+            DatabaseColumn.DEPARTURE_TIME.value: departure_time,
+            DatabaseColumn.ARRIVAL_SECONDS.value: parse_gtfs_time_to_seconds(arrival_time),
+            DatabaseColumn.DEPARTURE_SECONDS.value: parse_gtfs_time_to_seconds(departure_time),
+            DatabaseColumn.STOP_ID.value: clean(gtfs_field(row, GtfsColumn.STOP_ID)),
+            DatabaseColumn.STOP_SEQUENCE.value: parse_int(
+                gtfs_field(row, GtfsColumn.STOP_SEQUENCE)
+            )
+            or 0,
         }
+
+
+def gtfs_field(row: dict[str, str], column: GtfsColumn) -> str | None:
+    return row.get(column.value)
 
 
 def clean(value: str | None) -> str | None:
@@ -198,4 +225,4 @@ def parse_float(value: str | None) -> float | None:
 
 
 def parse_bool(value: str | None) -> bool:
-    return clean(value) == "1"
+    return clean(value) == GtfsValue.TRUE.value

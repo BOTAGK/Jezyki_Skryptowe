@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from timetable.constants import TimeToken
+
 
 @dataclass(frozen=True, slots=True)
 class StopOption:
@@ -24,7 +26,8 @@ class HourlyStatistic:
 
     @property
     def hour_label(self) -> str:
-        return f"{self.hour:02d}:00-{self.hour:02d}:59"
+        separator = TimeToken.SEPARATOR.value
+        return f"{self.hour:02d}{separator}00-{self.hour:02d}{separator}59"
 
 
 @dataclass(frozen=True, slots=True)

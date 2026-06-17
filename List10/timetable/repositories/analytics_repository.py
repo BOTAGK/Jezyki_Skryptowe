@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy import Integer, cast, func, select
 from sqlalchemy.orm import Session
 
+from timetable.constants import AnalyticsDefault, AnalyticsLabel
 from timetable.models import Route, StopTime, Trip
 from timetable.schemas.analytics import DirectionStatistic, HourlyStatistic
 from timetable.utils.time import format_gtfs_seconds
@@ -34,8 +35,13 @@ class AnalyticsRepository:
         return format_gtfs_seconds(first_seconds), format_gtfs_seconds(last_seconds)
 
     def popular_directions(self, stop_id: str, limit: int = 5) -> list[DirectionStatistic]:
-        direction = func.coalesce(Trip.trip_headsign, "unknown").label("direction")
-        departures = func.count(StopTime.id).label("departures")
+        direction_label = AnalyticsLabel.DIRECTION.value
+        departures_label = AnalyticsLabel.DEPARTURES.value
+        direction = func.coalesce(
+            Trip.trip_headsign,
+            AnalyticsDefault.UNKNOWN_DIRECTION.value,
+        ).label(direction_label)
+        departures = func.count(StopTime.id).label(departures_label)
         statement = (
             select(direction, departures)
             .select_from(StopTime)
@@ -46,14 +52,22 @@ class AnalyticsRepository:
             .limit(limit)
         )
         return [
-            DirectionStatistic(direction=str(row.direction), departures=int(row.departures))
+            DirectionStatistic(
+                direction=str(row._mapping[direction_label]),
+                departures=int(row._mapping[departures_label]),
+            )
             for row in self.session.execute(statement)
         ]
 
     def busiest_hours(self, stop_id: str, limit: int = 6) -> list[HourlyStatistic]:
-        hour = cast(StopTime.departure_seconds / 3600, Integer).label("hour")
-        departures = func.count(StopTime.id).label("departures")
-        distinct_routes = func.count(func.distinct(Route.route_id)).label("distinct_routes")
+        hour_label = AnalyticsLabel.HOUR.value
+        departures_label = AnalyticsLabel.DEPARTURES.value
+        distinct_routes_label = AnalyticsLabel.DISTINCT_ROUTES.value
+        hour = cast(StopTime.departure_seconds / 3600, Integer).label(hour_label)
+        departures = func.count(StopTime.id).label(departures_label)
+        distinct_routes = func.count(func.distinct(Route.route_id)).label(
+            distinct_routes_label
+        )
 
         statement = (
             select(hour, departures, distinct_routes)
@@ -69,9 +83,9 @@ class AnalyticsRepository:
 
         return [
             HourlyStatistic(
-                hour=int(row.hour),
-                departures=int(row.departures),
-                distinct_routes=int(row.distinct_routes),
+                hour=int(row._mapping[hour_label]),
+                departures=int(row._mapping[departures_label]),
+                distinct_routes=int(row._mapping[distinct_routes_label]),
             )
             for row in self.session.execute(statement)
         ]

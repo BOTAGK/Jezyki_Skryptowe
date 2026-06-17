@@ -5,6 +5,15 @@ from html import escape
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+from timetable.constants import (
+    CliArgument,
+    ContentType,
+    HttpHeader,
+    QueryParam,
+    TextEncoding,
+    WebDefault,
+    WebPath,
+)
 from timetable.schemas.analytics import StopAnalytics, StopOption
 from timetable.services.analytics_service import AnalyticsService
 from timetable.services.database_service import DatabaseService
@@ -13,11 +22,11 @@ from timetable.services.database_service import DatabaseService
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a small timetable web UI.")
     parser.add_argument(
-        "database",
+        CliArgument.DATABASE.value,
         help="Database name or path. Missing .sqlite3 suffix is added automatically.",
     )
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(CliArgument.HOST.value, default=WebDefault.HOST.value)
+    parser.add_argument(CliArgument.PORT.value, type=int, default=8000)
     return parser.parse_args()
 
 
@@ -27,13 +36,13 @@ def build_handler(database: DatabaseService) -> type[BaseHTTPRequestHandler]:
             parsed = urlparse(self.path)
             params = parse_qs(parsed.query)
 
-            if parsed.path in ("/", "/stops"):
-                query = params.get("q", [""])[0].strip()
+            if parsed.path in (WebPath.HOME.value, WebPath.STOPS.value):
+                query = params.get(QueryParam.SEARCH.value, [""])[0].strip()
                 self.render_stop_list(query)
                 return
 
-            if parsed.path == "/stop":
-                stop_id = params.get("stop_id", [""])[0].strip()
+            if parsed.path == WebPath.STOP.value:
+                stop_id = params.get(QueryParam.STOP_ID.value, [""])[0].strip()
                 self.render_stop_report(stop_id)
                 return
 
@@ -47,14 +56,14 @@ def build_handler(database: DatabaseService) -> type[BaseHTTPRequestHandler]:
             options = "\n".join(render_stop_option(stop) for stop in stops)
             body = f"""
             <section class="toolbar">
-                <form action="/stops" method="get" class="search">
-                    <input name="q" value="{escape(query)}" placeholder="Filter stops" autofocus>
+                <form action="{WebPath.STOPS.value}" method="get" class="search">
+                    <input name="{QueryParam.SEARCH.value}" value="{escape(query)}" placeholder="Filter stops" autofocus>
                     <button type="submit">Search</button>
                 </form>
             </section>
-            <form action="/stop" method="get" class="panel">
-                <label for="stop_id">Stop</label>
-                <select id="stop_id" name="stop_id" size="18" required>
+            <form action="{WebPath.STOP.value}" method="get" class="panel">
+                <label for="{QueryParam.STOP_ID.value}">Stop</label>
+                <select id="{QueryParam.STOP_ID.value}" name="{QueryParam.STOP_ID.value}" size="18" required>
                     {options}
                 </select>
                 <button type="submit">Show analysis</button>
@@ -64,7 +73,7 @@ def build_handler(database: DatabaseService) -> type[BaseHTTPRequestHandler]:
 
         def render_stop_report(self, stop_id: str) -> None:
             if not stop_id:
-                self.redirect("/")
+                self.redirect(WebPath.HOME.value)
                 return
 
             try:
@@ -79,14 +88,14 @@ def build_handler(database: DatabaseService) -> type[BaseHTTPRequestHandler]:
 
         def redirect(self, location: str) -> None:
             self.send_response(302)
-            self.send_header("Location", location)
+            self.send_header(HttpHeader.LOCATION.value, location)
             self.end_headers()
 
         def write_html(self, html: str) -> None:
-            data = html.encode("utf-8")
+            data = html.encode(TextEncoding.UTF_8.value)
             self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(data)))
+            self.send_header(HttpHeader.CONTENT_TYPE.value, ContentType.HTML_UTF_8.value)
+            self.send_header(HttpHeader.CONTENT_LENGTH.value, str(len(data)))
             self.end_headers()
             self.wfile.write(data)
 
@@ -119,7 +128,7 @@ def render_report(analytics: StopAnalytics) -> str:
     )
 
     return f"""
-    <nav><a href="/">Back to stops</a></nav>
+    <nav><a href="{WebPath.HOME.value}">Back to stops</a></nav>
     <header>
         <h1>{escape(analytics.stop.stop_name)}</h1>
         <p class="muted">Stop id: {escape(analytics.stop.stop_id)}</p>
