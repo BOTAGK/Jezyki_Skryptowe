@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 from threading import Event, Thread
 from typing import Optional
@@ -18,7 +19,6 @@ from PySide6.QtCore import (
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QApplication,
-    QCheckBox,
     QDateTimeEdit,
     QFileDialog,
     QLineEdit,
@@ -27,6 +27,10 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton, QComboBox,
 )
+
+
+
+
 
 from List7.log_data import (
     LogFilter,
@@ -123,7 +127,7 @@ class LogBrowserController:
         self.from_datetime_edit = self._require(QDateTimeEdit, "fromDateTimeEdit")
         self.to_datetime_edit = self._require(QDateTimeEdit, "toDateTimeEdit")
 
-        self.error_filter_combobox = self._require(QComboBox, "errorFilterComboBox")
+        self.error_filter = self._require(QComboBox, "errorFilterComboBox")
 
         self.detail_fields = {
             "uid": self._require(QLineEdit, "uidEdit"),
@@ -158,7 +162,7 @@ class LogBrowserController:
         self.next_button.clicked.connect(self._on_next)
         self.log_list.selectionModel().currentChanged.connect(self._on_current_changed)
 
-        # self.error_filter_combobox.stateChanged.connect(self._refresh_filters)
+        
 
     def _on_open(self) -> None:
         if self.is_loading:
@@ -260,11 +264,11 @@ class LogBrowserController:
             date_range_filter(start_dt, end_dt),
         ]
 
-        if self.error_filter_combobox.isEnabled():
-            if self.error_filter_combobox.currentIndex() == 0:
-                filters.append(errors_only_filter())
-            else:
-                filters.append(no_error_only_filter())
+        if self.error_filter.currentIndex() == 0:
+            filters.append(errors_only_filter())
+        else:
+            filters.append(no_error_only_filter())
+        
 
         return filters
 
@@ -293,7 +297,7 @@ class LogBrowserController:
         if self.is_loading or not self.store.records:
             return
 
-        #self.error_filter_combobox.setChecked(False)
+        
         self.log_model.apply_filters([])
         self._seed_filter_range()
         self._select_first_or_clear()

@@ -4,10 +4,10 @@ from typing import Any, List
 
 import pytest
 
-from List8.measurements import Measurements
-from List8.series_validator import OutlierDetector, ThresholdDetector, ZeroSpikeDetector
-from List8.simple_reporter import SimpleReporter
-from List8.time_series import TimeSeries
+from measurements import Measurements
+from series_validator import OutlierDetector, ThresholdDetector, ZeroSpikeDetector
+from simple_reporter import SimpleReporter
+from time_series import TimeSeries
 
 
 @pytest.fixture

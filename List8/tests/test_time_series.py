@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 
 import pytest
 from datetime import datetime, date
-from List8.time_series import TimeSeries
+from time_series import TimeSeries
 
 def test_getitem_with_int(example_series: TimeSeries) -> None:
     date_obj: datetime
@@ -139,3 +139,6 @@ def test_stddev_with_all_none_values() -> None:
     assert stddev_value is None
     
      
+def test_wrong_inted_type_raises_type_error(example_series: TimeSeries) -> None:
+    with pytest.raises(TypeError, match="Invalid key type"):
+        _ = example_series[1.5]
