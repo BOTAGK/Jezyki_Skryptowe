@@ -9,11 +9,19 @@ class TimeSeries:
     averaging_time: str
     dates: List[datetime]
     values: List[Optional[float]]
-    unit: str
+    unit: str 
 
     
-    def __init__(self, name: str, station_code: str, averaging_time: str, 
-                 dates: List[datetime], values: List[Optional[float]], unit: str):
+    def __init__(
+            self, 
+            name: str, 
+            station_code: str, 
+            averaging_time: str,
+            dates: List[datetime], 
+            values: List[Optional[float]], 
+            unit: str
+        ) -> None:
+
         self.station_name = name
         self.station_code = station_code
         self.averaging_time = averaging_time
@@ -57,7 +65,7 @@ class TimeSeries:
 
         raise TypeError(
             f"Invalid key type: {type(key)}. Expected int, slice, date, or datetime."
-        )    
+        )  
 
     def __set_unit__(self, unit: str) -> None:
         if self.unit == "ug/m3" and unit == "ng/m3":
@@ -72,16 +80,16 @@ class TimeSeries:
 
     @property
     def mean(self) -> Optional[float]:
-        valid_values = [v for v in self.values if v is not None]
+        valid_values: List[float] = [v for v in self.values if v is not None]
         return statistics.mean(valid_values) if valid_values else None
     
     @property
     def stddev(self) -> Optional[float]:
-        valid_values = [v for v in self.values if v is not None]
+        valid_values: List[float] = [v for v in self.values if v is not None]
         return statistics.stdev(valid_values) if len(valid_values) > 1 else None
 
     @property
-    def get_unit(self) -> Optional[str]:
+    def get_unit(self) -> str:
         return self.unit
 
     
