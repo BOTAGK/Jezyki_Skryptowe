@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Index, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +15,9 @@ from timetable.constants import (
 )
 from timetable.models.base import Base
 
-
+if TYPE_CHECKING:
+    from timetable.models.trip import Trip
+    from timetable.models.stop import Stop
 class StopTime(Base):
     __tablename__ = TableName.STOP_TIMES.value
     __table_args__ = (

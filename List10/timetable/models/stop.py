@@ -6,6 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from timetable.constants import RelationshipName, TableName
 from timetable.models.base import Base
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from timetable.models.stop_time import StopTime
 
 class Stop(Base):
     __tablename__ = TableName.STOPS.value

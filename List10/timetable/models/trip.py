@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -12,6 +13,11 @@ from timetable.constants import (
     foreign_key_target,
 )
 from timetable.models.base import Base
+
+if TYPE_CHECKING:
+    from timetable.models.route import Route
+    from timetable.models.calendar import ServiceCalendar
+    from timetable.models.stop_time import StopTime
 
 
 class Trip(Base):

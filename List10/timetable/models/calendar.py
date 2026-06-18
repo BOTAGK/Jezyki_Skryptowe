@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Date, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from timetable.constants import RelationshipName, TableName
 from timetable.models.base import Base
 
+if TYPE_CHECKING:
+    from timetable.models.trip import Trip
 
 class ServiceCalendar(Base):
     __tablename__ = TableName.SERVICE_CALENDAR.value
